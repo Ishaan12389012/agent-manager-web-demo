@@ -21,6 +21,9 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(express.json());
 
+// Lets the host check the site is up.
+app.get('/healthz', (req, res) => res.send('ok'));
+
 app.use(session({
   store: new PgSession({ pool, tableName: 'session' }),
   secret: process.env.SESSION_SECRET || 'dev-only-secret-change-me',

@@ -1,0 +1,22 @@
+# Render blueprint: tells Render how to build and run Verdict.
+# In Render, choose New > Blueprint and pick this repository.
+services:
+  - type: web
+    name: verdict
+    runtime: node
+    plan: free
+    # Install packages, then make sure the database tables exist (safe to run every time).
+    buildCommand: npm ci && npm run db:setup
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_SSL
+        value: "true"
+      # Render makes a long random value for you.
+      - key: SESSION_SECRET
+        generateValue: true
+      # Your Neon connection string. Render asks you to paste it when you create the service.
+      - key: DATABASE_URL
+        sync: false
