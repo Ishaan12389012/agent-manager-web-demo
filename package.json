@@ -1,0 +1,30 @@
+{
+  "name": "verdict",
+  "version": "1.0.0",
+  "description": "Verdict web app with PostgreSQL sign up and log in",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "db:setup": "node db/setup.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ishaan12389012/agent-manager-web-demo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ishaan12389012/agent-manager-web-demo/issues"
+  },
+  "homepage": "https://github.com/Ishaan12389012/agent-manager-web-demo#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "connect-pg-simple": "^10.0.0",
+    "dotenv": "^18.0.6",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "pg": "^8.23.1"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  }
+}
