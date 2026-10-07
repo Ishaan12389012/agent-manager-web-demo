@@ -1126,7 +1126,7 @@ const commas = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ','
 const pct = (p) => Math.round(Math.abs(p)) + '%';
 const trend = (p, upIsGood) => {
   const flat = Math.abs(p) < 0.5, up = p >= 0, good = upIsGood ? up : !up;
-  return { arrow: flat ? '–' : up ? '▲' : '▼', txt: pct(p), color: flat ? '#76736b' : good ? '#15803d' : '#c81e1e' };
+  return { arrow: flat ? '–' : up ? '▲' : '▼', txt: pct(p), color: flat ? '#76736b' : good ? '#3f7d4e' : '#b42318' };
 };
 const initials = (name) => name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
@@ -1665,7 +1665,8 @@ class Component extends DCLogic {
     const risk = sl.reduce((a, t) => a + t.value * 3, 0);
     const growing = M.depts.filter((d) => d.ug > 0).length;
     const dues = sl.map((t) => (t.risk ? parseInt(t.risk.due, 10) : 0));
-    const latest = sl.length ? sl[dues.indexOf(Math.max.apply(null, dues))].risk.due : '';
+    const latestT = sl.length ? sl[dues.indexOf(Math.max.apply(null, dues))] : null;
+    const latest = latestT && latestT.risk ? latestT.risk.due : 'not yet scheduled';
     const crossed = M.crossedNow.map((t) => this.tl(t));
     const oldest = M.pending.slice().sort((a, b) => b.age - a.age)[0];
     return [
@@ -1710,7 +1711,7 @@ class Component extends DCLogic {
     if (!list.length) return [{ p: `Nothing${dept ? ' in ' + dept.name : ''} is slipping right now.${watched.length ? ` Owners are keeping an eye on ${watched.map((t) => this.tl(t)).join(' and ')}, but neither needs you.` : ''}` }];
     const out = [
       { p: `${cap(word(list.length))} tool${list.length > 1 ? 's are' : ' is'} slipping${dept ? ' in ' + dept.name : ''}:` },
-      { ul: list.map((t) => `${this.tl(t)} (${t.deptName}) — ${t.issue.home.replace(/\.$/, '')}. About **${money(t.value * 3)} a quarter** is at stake; ${t.risk.owner.split(' ')[0]}'s fix is due ${t.risk.due}.`) },
+      { ul: list.map((t) => `${this.tl(t)} (${t.deptName}) — ${t.issue.home.replace(/\.$/, '')}. About **${money(t.value * 3)} a quarter** is at stake; ${t.risk ? `${t.risk.owner.split(' ')[0]}'s fix is due ${t.risk.due}` : 'no fix is scheduled yet'}.`) },
     ];
     if (watched.length) out.push({ p: `Owners are also watching ${watched.map((t) => `${this.tl(t)} (${t.status === 'Watch' ? 'run cost creeping up' : 'savings figures under review'})`).join(' and ')}, but neither needs you yet.` });
     out.push({ ask: list.map((t) => `Why is ${t.name} declining?`) });
@@ -1801,7 +1802,7 @@ class Component extends DCLogic {
     const items = [];
     const blocking = M.pending.filter((a) => a.blocking);
     blocking.forEach((a) => items.push(`**${M.byId[a.tool].name}** — decide on the ${lcFirst(a.title)}. It has waited ${a.age} days and is holding up a launch; Verdict recommends approving. [[review:${a.id}|Review]]`));
-    M.slipping.slice().sort((a, b) => b.value - a.value).forEach((t) => items.push(`**${t.name}** — ${money(t.value * 3)} a quarter depends on it. ${t.risk.owner.split(' ')[0]}'s fix (${t.risk.mitigation}) is due ${t.risk.due}. [[tool:${t.id}|Open]]`));
+    M.slipping.slice().sort((a, b) => b.value - a.value).forEach((t) => items.push(`**${t.name}** — ${money(t.value * 3)} a quarter depends on it. ${t.risk ? `${t.risk.owner.split(' ')[0]}'s fix (${t.risk.mitigation}) is due ${t.risk.due}.` : 'No fix is scheduled yet.'} [[tool:${t.id}|Open]]`));
     const rest = M.pending.filter((a) => !a.blocking);
     if (rest.length) items.push(`${rest.map((a) => `**${M.byId[a.tool].name}**`).join(' and ')} — ${rest.length > 1 ? 'both low-risk approvals; a minute each' : 'a low-risk approval'}. [[go:attention|See all]]`);
     if (!items.length) return [{ p: "Nothing needs you right now. Everything slipping is fixed and every approval is cleared — enjoy the quiet." }];
@@ -1951,8 +1952,12 @@ class Component extends DCLogic {
     const greet = hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
     const oldest = M.pending.slice().sort((a, b) => b.age - a.age)[0];
     const none = { value: '—', note: 'No data yet', color: '#bdb5a3', noteColor: '#8a867c' };
-    const stat = (label, click, v) => Object.assign({ label, click }, hasData ? Object.assign({ color: '#1f1e1d', noteColor: '#76736b' }, v) : none);
+    // Good / watch / bad colours for each metric. They only light up once there is data.
+    const GOOD = '#3f7d4e', WATCH = '#a8651e', BAD = '#b42318';
+    const stat = (label, click, v) => Object.assign({ label, click }, hasData ? Object.assign({ color: '#1f1e1d', noteColor: v.tone || '#76736b' }, v) : none);
     const tr = (x, up) => { const t = trend(x, up); return `${t.arrow} ${t.txt} vs last month`; };
+    const toneOf = (x, up) => (Math.abs(x) < 0.5 ? null : (up ? x > 0 : x < 0) ? GOOD : BAD);
+    const paidShare = M.running ? M.paid / M.running : 0;
     let sub;
     if (!hasData) sub = 'Your AI tools at a glance. Numbers will show up here once your data is connected.';
     else if (slipN) sub = `${M.running - slipN} of ${M.running} live tools are running fine. ${cap(word(slipN))} ${slipN > 1 ? 'are' : 'is'} losing ground.`;
@@ -1960,10 +1965,12 @@ class Component extends DCLogic {
     return {
       greet, sub, noData: !hasData,
       stats: [
-        stat('Value returned', () => this.nav('departments'), { value: money(T.value), note: tr(T.vg, true) }),
-        stat('People using them', () => this.nav('departments'), { value: usersShort(T.users), note: tr(T.ug, true) }),
-        stat('Earning their keep', () => this.nav('projects', { f: { dept: '', status: '', owner: '', stage: '' } }), { value: `${M.paid} / ${M.running}`, note: 'paid back their build' }),
-        stat('Waiting on you', () => this.nav('attention', { atTab: 'approvals', atQuick: 'all' }), { value: String(pendN), note: oldest ? `Oldest ${oldest.age} days` : 'All clear' }),
+        stat('Value returned', () => this.nav('departments'), { value: money(T.value), note: tr(T.vg, true), tone: toneOf(T.vg, true) }),
+        stat('People using them', () => this.nav('departments'), { value: usersShort(T.users), note: tr(T.ug, true), tone: toneOf(T.ug, true) }),
+        stat('Earning their keep', () => this.nav('projects', { f: { dept: '', status: '', owner: '', stage: '' } }), { value: `${M.paid} / ${M.running}`, note: 'paid back their build',
+          tone: !M.running ? null : paidShare >= 0.6 ? GOOD : paidShare >= 0.3 ? WATCH : BAD }),
+        stat('Waiting on you', () => this.nav('attention', { atTab: 'approvals', atQuick: 'all' }), { value: String(pendN), note: oldest ? `Oldest ${oldest.age} days` : 'All clear',
+          tone: !oldest ? GOOD : oldest.age > 3 ? BAD : WATCH }),
       ],
       issues: M.slipping.slice().sort((a, b) => (b.valuePrev - b.value) - (a.valuePrev - a.value)).map((t) => ({
         name: t.name, dot: t.st.dot, pill: t.status, pillFg: t.st.fg,
