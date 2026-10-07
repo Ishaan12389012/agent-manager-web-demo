@@ -16,6 +16,16 @@ You need [Node.js](https://nodejs.org) 18 or newer and a PostgreSQL database.
 
 You'll land on the log in page. Click **Create an account**, and you're in. **Sign out** is in the account menu at the top right.
 
+## Put it online (Render)
+
+`render.yaml` sets the site up on [Render](https://render.com)'s free plan, so anyone can open it at a public link.
+
+1. In Render, choose **New > Blueprint** and pick this repository.
+2. When asked, paste your database connection string into `DATABASE_URL`. Render fills in the rest itself, including a random `SESSION_SECRET`.
+3. Click **Apply**. Every time `main` changes on GitHub, Render rebuilds the site.
+
+Free Render sites go to sleep after about 15 minutes with no visitors, and the first visit after that takes up to a minute to load.
+
 ## What's where
 
 | File | What it does |
@@ -25,6 +35,7 @@ You'll land on the log in page. Click **Create an account**, and you're in. **Si
 | `server.js` | Web server: pages plus `/api/signup`, `/api/login`, `/api/logout`, `/api/me` |
 | `db/schema.sql` | The `users` and `session` tables |
 | `db/setup.js` | Runs the schema against `DATABASE_URL` |
+| `render.yaml` | How Render builds and runs the site |
 
 Passwords are hashed with bcrypt and never stored as plain text. Logins are kept in a cookie-based session stored in Postgres, so people stay logged in for a week, even across server restarts.
 
