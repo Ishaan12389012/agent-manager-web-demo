@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verdict · Sign up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&amp;display=swap">
+<link rel="stylesheet" href="/assets/auth.css">
+</head>
+<body>
+<main class="card">
+<div class="brand"><span class="mark" aria-hidden="true">&#10022;</span>Verdict</div>
+<h1>Create your account</h1>
+<p class="sub">It takes a minute. You will land straight in your dashboard.</p>
+<form data-endpoint="/api/signup" novalidate>
+<div id="error" class="error" role="alert"></div>
+<label>Full name<input type="text" name="name" autocomplete="name" required autofocus></label>
+<label>Email<input type="email" name="email" autocomplete="email" required></label>
+<label>Password<input type="password" name="password" autocomplete="new-password" minlength="8" required><span class="hint">At least 8 characters.</span></label>
+<button type="submit">Create account</button>
+</form>
+<p class="alt">Already have an account? <a href="/login">Log in</a></p>
+</main>
+<script src="/assets/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verdict · Log in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&amp;display=swap">
+<link rel="stylesheet" href="/assets/auth.css">
+</head>
+<body>
+<main class="card">
+<div class="brand"><span class="mark" aria-hidden="true">&#10022;</span>Verdict</div>
+<h1>Welcome back</h1>
+<p class="sub">Log in to see what every AI tool in the company costs and returns.</p>
+<form data-endpoint="/api/login" novalidate>
+<div id="error" class="error" role="alert"></div>
+<label>Email<input type="email" name="email" autocomplete="email" required autofocus></label>
+<label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+<button type="submit">Log in</button>
+</form>
+<p class="alt">New to Verdict? <a href="/signup">Create an account</a></p>
+</main>
+<script src="/assets/auth.js"></script>
+</body>
+</html>
