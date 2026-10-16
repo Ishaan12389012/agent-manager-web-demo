@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask Verdict</title>
+<link rel="stylesheet" href="/vendor/webchat.css">
+<style>
+  html, body { height: 100%; margin: 0; background: #f7f4ec; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; color: #1f1e1d; }
+  #webchat { height: 100%; }
+  .note { display: flex; height: 100%; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; text-align: center; font-size: 15px; line-height: 1.5; color: #5e5c56; }
+</style>
+</head>
+<body>
+<div id="webchat"><div class="note">Connecting to the chatbot…</div></div>
+<script src="/vendor/webchat.js"></script>
+<script>
+(async function () {
+  const box = document.getElementById('webchat');
+  const say = (text) => { box.innerHTML = ''; const d = document.createElement('div'); d.className = 'note'; d.textContent = text; box.appendChild(d); };
+
+  let res;
+  try { res = await fetch('/api/copilot/token', { cache: 'no-store' }); } catch (e) { return say('Could not reach Verdict. Check your connection and try again.'); }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) return say(data.error || 'The chatbot is not available right now.');
+
+  // Ask the agent to run its Conversation Start topic, so the greeting shows straight away.
+  const store = window.WebChat.createStore({}, ({ dispatch }) => (next) => (action) => {
+    if (action.type === 'DIRECT_LINE/CONNECT_FULFILLED') {
+      dispatch({ type: 'DIRECT_LINE/POST_ACTIVITY', meta: { method: 'keyboard' }, payload: { activity: { type: 'event', name: 'startConversation', channelData: { postBack: true } } } });
+    }
+    return next(action);
+  });
+
+  box.innerHTML = '';
+  window.WebChat.renderWebChat({
+    directLine: window.WebChat.createDirectLine({ token: data.token, domain: data.domain }),
+    store,
+    locale: navigator.language || 'en-GB',
+    styleOptions: {
+      backgroundColor: '#f7f4ec',
+      primaryFont: "'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      accent: '#2b2a26',
+      bubbleBackground: '#e9e4d8',
+      bubbleBorderRadius: 14,
+      bubbleFromUserBackground: '#2b2a26',
+      bubbleFromUserTextColor: '#ffffff',
+      bubbleFromUserBorderRadius: 14,
+      sendBoxBackground: '#f7f4ec',
+      hideUploadButton: true,
+      botAvatarInitials: 'V',
+      botAvatarBackgroundColor: '#e9e4d8',
+    },
+  }, box);
+})();
+</script>
+</body>
+</html>

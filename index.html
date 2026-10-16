@@ -782,7 +782,7 @@ sc-for,sc-if{display:contents}
 </sc-if>
 <sc-if value="{{ copilot.page }}" hint-placeholder-val="{{ false }}">
 <div class="fade" style="display:flex; flex-direction:column; min-height:calc(100vh - 170px); background:#f7f4ec; border:1px solid #e2dccd; border-radius:14px; overflow:hidden">
-<iframe title="Ask Verdict chatbot" src="{{ copilot.src }}" style="flex:1; width:100%; min-height:520px; border:0; background:#ffffff"></iframe>
+<iframe title="Ask Verdict chatbot" src="{{ copilot.src }}" style="flex:1; width:100%; min-height:520px; border:0; background:#f7f4ec"></iframe>
 </div>
 </sc-if>
 <sc-if value="{{ copilot.demoPage }}" hint-placeholder-val="{{ false }}">
@@ -915,7 +915,7 @@ sc-for,sc-if{display:contents}
 <span style="flex:1; font-size:19px; font-weight:700">Ask Verdict</span>
 <button class="hov" onClick="{{ panel.close }}" aria-label="Close Ask Verdict" style="width:40px; height:40px; border:0; border-radius:10px; background:#f7f4ec; color:#5e5c56; display:inline-flex; align-items:center; justify-content:center; cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round"><path d="{{ ic.x }}"></path></svg></button>
 </div>
-<iframe title="Ask Verdict chatbot" src="{{ copilot.src }}" style="flex:1; width:100%; border:0; background:#ffffff"></iframe>
+<iframe title="Ask Verdict chatbot" src="{{ copilot.src }}" style="flex:1; width:100%; border:0; background:#f7f4ec"></iframe>
 </section>
 </sc-if>
 <sc-if value="{{ panel.open }}" hint-placeholder-val="{{ false }}">
@@ -1106,9 +1106,9 @@ sc-for,sc-if{display:contents}
 (function () {
 'use strict';
 
-// Copilot Studio chatbot shown in Ask Verdict. Paste the iframe "src" link from
-// Copilot Studio (Channels > Web app) here; leave it empty to use the built-in demo chat.
-const COPILOT_WEBCHAT_URL = 'https://copilotstudio.microsoft.com/environments/Default-91524870-c352-40be-8f9d-bfb225dcb978/bots/cr47e_verdictchatbot_M67gQ0/webchat?__version__=2&enableFileAttachment=false&cliAgent=true';
+// Chat window for the Copilot Studio chatbot shown in Ask Verdict. It connects through
+// Direct Line using COPILOT_DIRECTLINE_SECRET on the server; set this to '' to use the built-in demo chat.
+const COPILOT_WEBCHAT_URL = '/copilot-chat';
 
 // ---- minimal component base: setState merges state and schedules a repaint ----
 let requestRender = function () {};

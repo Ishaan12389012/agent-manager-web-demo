@@ -20,3 +20,6 @@ services:
       # Your Neon connection string. Render asks you to paste it when you create the service.
       - key: DATABASE_URL
         sync: false
+      # Copilot Studio > Settings > Security > Web channel security > Secret 1. Paste it in Render, never in code.
+      - key: COPILOT_DIRECTLINE_SECRET
+        sync: false

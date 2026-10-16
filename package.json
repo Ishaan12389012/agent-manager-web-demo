@@ -17,6 +17,7 @@
   "homepage": "https://github.com/Ishaan12389012/agent-manager-web-demo#readme",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "botframework-webchat": "4.19.1",
     "connect-pg-simple": "^10.0.0",
     "dotenv": "^18.0.6",
     "express": "^5.2.1",

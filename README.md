@@ -24,6 +24,10 @@ You'll land on the log in page. Click **Create an account**, and you're in. **Si
 2. When asked, paste your database connection string into `DATABASE_URL`. Render fills in the rest itself, including a random `SESSION_SECRET`.
 3. Click **Apply**. Every time `main` changes on GitHub, Render rebuilds the site.
 
+### Copilot Studio chatbot
+
+Ask Verdict shows your Copilot Studio agent. To connect it, copy **Secret 1** from Copilot Studio (**Settings > Security > Web channel security**) into `COPILOT_DIRECTLINE_SECRET`, in `.env` on your computer or in the Render service's **Environment** tab. The secret stays on the server; the chat window only gets a short-lived token.
+
 Free Render sites go to sleep after about 15 minutes with no visitors, and the first visit after that takes up to a minute to load.
 
 ## What's where
