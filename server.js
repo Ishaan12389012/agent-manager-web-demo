@@ -106,6 +106,31 @@ app.get('/api/me', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ---- Copilot Studio chatbot (Direct Line) ----
+// The Direct Line secret stays on the server. Logged-in people get a short-lived
+// token instead, which the chat window uses to talk to the Copilot Studio agent.
+const DIRECTLINE_URL = (process.env.COPILOT_DIRECTLINE_URL || 'https://directline.botframework.com').replace(/\/+$/, '');
+
+app.get('/api/copilot/token', async (req, res, next) => {
+  try {
+    if (!req.session.userId) return res.status(401).json({ error: 'Not logged in.' });
+    const secret = process.env.COPILOT_DIRECTLINE_SECRET;
+    if (!secret) return res.status(503).json({ error: 'The chatbot is not connected yet.' });
+
+    const r = await fetch(`${DIRECTLINE_URL}/v3/directline/tokens/generate`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${secret}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user: { id: `dl_verdict-${req.session.userId}` } }),
+    });
+    if (!r.ok) {
+      console.error('Direct Line token request failed:', r.status, await r.text());
+      return res.status(502).json({ error: 'Could not reach the chatbot. Please try again.' });
+    }
+    const { token } = await r.json();
+    res.set('Cache-Control', 'no-store').json({ token, domain: `${DIRECTLINE_URL}/v3/directline` });
+  } catch (err) { next(err); }
+});
+
 // ---- Pages ----
 
 const page = (file) => path.join(__dirname, 'public', file);
@@ -114,6 +139,12 @@ const loggedIn = (req) => Boolean(req.session.userId);
 app.get('/login', (req, res) => (loggedIn(req) ? res.redirect('/') : res.sendFile(page('login.html'))));
 app.get('/signup', (req, res) => (loggedIn(req) ? res.redirect('/') : res.sendFile(page('signup.html'))));
 app.use('/assets', express.static(path.join(__dirname, 'public', 'assets')));
+
+// Bot Framework Web Chat, the chat window Microsoft provides for Copilot Studio agents.
+const webchatDist = path.join(__dirname, 'node_modules', 'botframework-webchat', 'dist');
+app.get('/vendor/webchat.js', (req, res) => res.sendFile(path.join(webchatDist, 'webchat.js')));
+app.get('/vendor/webchat.css', (req, res) => res.sendFile(path.join(webchatDist, 'webchat.css')));
+app.get('/copilot-chat', (req, res) => (loggedIn(req) ? res.sendFile(page('copilot-chat.html')) : res.redirect('/login')));
 
 // The app itself is only for logged-in people.
 app.get(['/', '/index.html'], (req, res) => (loggedIn(req) ? res.sendFile(path.join(__dirname, 'index.html')) : res.redirect('/login')));
