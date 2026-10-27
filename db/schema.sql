@@ -23,8 +23,11 @@ CREATE INDEX IF NOT EXISTS session_expire_idx ON session (expire);
 -- ---- Analyst ranking and task assignment ----
 
 -- admin and exec assign work; analysts do it. Existing accounts become admins.
-ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'admin'
-  CHECK (role IN ('admin', 'exec', 'analyst'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'admin';
+-- New sign-ups get 'member' (no access to tasks) until an admin gives them a role.
+ALTER TABLE users ALTER COLUMN role SET DEFAULT 'member';
+ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
+ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'exec', 'analyst', 'member'));
 
 -- One row per analyst. Created when someone is given the analyst role.
 CREATE TABLE IF NOT EXISTS analysts (

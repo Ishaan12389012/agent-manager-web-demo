@@ -62,7 +62,10 @@ app.post('/api/signup', async (req, res, next) => {
     let user;
     try {
       const { rows } = await pool.query(
-        'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, role',
+        // The very first account is the admin; everyone after waits for an admin to give them a role.
+        `INSERT INTO users (name, email, password_hash, role)
+         VALUES ($1, $2, $3, CASE WHEN EXISTS (SELECT 1 FROM users WHERE role = 'admin') THEN 'member' ELSE 'admin' END)
+         RETURNING id, name, email, role`,
         [name, email, hash],
       );
       user = rows[0];
@@ -147,6 +150,7 @@ app.post('/api/tasks/:id/complete', act((req) => tasks.complete(req.user, req.pa
 app.post('/api/tasks/:id/reopen', act((req) => tasks.reopen(req.user, req.params.id, req.body)));
 app.post('/api/requests/:id/review', act((req) => tasks.reviewRequest(req.user, req.params.id, req.body)));
 app.get('/api/analysts', act((req) => tasks.listAnalysts(req.user)));
+app.get('/api/users', act((req) => tasks.listUsers(req.user)));
 app.post('/api/users/:id/role', act((req) => tasks.setRole(req.user, req.params.id, req.body)));
 app.get('/api/notices', act((req) => tasks.listNotices(req.user)));
 app.post('/api/notices/:id/read', act((req) => tasks.markNoticeRead(req.user, req.params.id)));

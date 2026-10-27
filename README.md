@@ -24,6 +24,10 @@ You'll land on the log in page. Click **Create an account**, and you're in. **Si
 2. When asked, paste your database connection string into `DATABASE_URL`. Render fills in the rest itself, including a random `SESSION_SECRET`.
 3. Click **Apply**. Every time `main` changes on GitHub, Render rebuilds the site.
 
+### Who can do what
+
+Every account has a role: **admin** (assigns work and changes roles), **exec** (assigns work), **analyst** (works on tasks given to them) or **no access yet**. The first account ever created is an admin. Everyone who signs up after that starts with no access until an admin gives them a role in **Settings > Manage users**. Accounts that existed before roles were added are admins.
+
 ### Copilot Studio chatbot
 
 Ask Verdict shows your Copilot Studio agent. To connect it, copy **Secret 1** from Copilot Studio (**Settings > Security > Web channel security**) into `COPILOT_DIRECTLINE_SECRET`, in `.env` on your computer or in the Render service's **Environment** tab. The secret stays on the server; the chat window only gets a short-lived token.
@@ -39,7 +43,7 @@ Free Render sites go to sleep after about 15 minutes with no visitors, and the f
 | `server.js` | Web server: pages plus `/api/signup`, `/api/login`, `/api/logout`, `/api/me` |
 | `db/schema.sql` | The `users` and `session` tables, plus analysts, tasks, task events, requests and notices |
 | `lib/assign.js` | Analyst ranking, tiers and trust score rules (pure functions, tested in `lib/assign.test.js`, run with `npm test`) |
-| `lib/tasks.js` | Task assignment against the database, used by the `/api/tasks`, `/api/requests`, `/api/analysts`, `/api/notices` and `/api/users/:id/role` routes |
+| `lib/tasks.js` | Task assignment against the database, used by the `/api/tasks`, `/api/requests`, `/api/analysts`, `/api/notices`, `/api/users` and `/api/users/:id/role` routes |
 | `db/setup.js` | Runs the schema against `DATABASE_URL` |
 | `render.yaml` | How Render builds and runs the site |
 

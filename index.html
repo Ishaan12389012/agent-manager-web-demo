@@ -949,8 +949,9 @@ sc-for,sc-if{display:contents}
 
 <section aria-label="Profile" style="display:flex; align-items:center; flex-wrap:wrap; gap:18px; padding:24px; background:#f7f4ec; border:1px solid #e2dccd; border-radius:14px">
 <span style="width:64px; height:64px; border-radius:50%; background:#2b2a26; color:#ffffff; font-size:21px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; flex:none">{{ user.ini }}</span>
-<div style="flex:1; min-width:200px; display:flex; flex-direction:column; gap:2px"><span style="font-size:20px; font-weight:700">{{ user.name }}</span><span style="font-size:15px; color:#5e5c56">Chief Product Officer · sees all nine departments</span></div>
-<span style="padding:5px 12px; border-radius:999px; background:#e9e4d8; color:#1f1e1d; font-size:14px; font-weight:700">Admin</span>
+<div style="flex:1; min-width:200px; display:flex; flex-direction:column; gap:2px"><span style="font-size:20px; font-weight:700">{{ user.name }}</span><span style="font-size:15px; color:#5e5c56">{{ st.roleSub }}</span></div>
+<span style="padding:5px 12px; border-radius:999px; background:#e9e4d8; color:#1f1e1d; font-size:14px; font-weight:700">{{ st.roleLabel }}</span>
+<sc-if value="{{ st.isAdmin }}" hint-placeholder-val="{{ false }}"><button class="btn-s" onClick="{{ st.users }}" style="min-height:44px; padding:0 16px; border:1px solid #d9d2c1; border-radius:12px; background:#f7f4ec; font:inherit; font-size:15px; font-weight:700; color:#1f1e1d; cursor:pointer">Manage users</button></sc-if>
 </section>
 
 <section aria-labelledby="h-brief" style="display:flex; flex-direction:column; padding:8px 24px; background:#f7f4ec; border:1px solid #e2dccd; border-radius:14px">
@@ -1125,7 +1126,7 @@ sc-for,sc-if{display:contents}
 
 <sc-if value="{{ modal.isUsers }}" hint-placeholder-val="{{ false }}">
 <div style="display:flex; flex-direction:column; gap:16px; padding:28px 30px">
-<div style="display:flex; align-items:flex-start; gap:16px"><div style="flex:1"><h2 id="dlg-title" style="margin:0; font-size:24px; font-weight:700">Manage users</h2><p style="margin:4px 0 0; font-size:15px; color:#76736b">Who can see Verdict, and who can approve changes.</p></div><button class="hov" onClick="{{ modal.close }}" aria-label="Close" style="width:40px; height:40px; border:0; border-radius:10px; background:#f7f4ec; color:#5e5c56; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; flex:none"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round"><path d="{{ ic.x }}"></path></svg></button></div>
+<div style="display:flex; align-items:flex-start; gap:16px"><div style="flex:1"><h2 id="dlg-title" style="margin:0; font-size:24px; font-weight:700">Manage users</h2><p style="margin:4px 0 0; font-size:15px; color:#76736b">Admins and execs assign work, analysts do it. New sign-ups have no access until you give them a role.</p></div><button class="hov" onClick="{{ modal.close }}" aria-label="Close" style="width:40px; height:40px; border:0; border-radius:10px; background:#f7f4ec; color:#5e5c56; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; flex:none"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round"><path d="{{ ic.x }}"></path></svg></button></div>
 <div style="display:flex; flex-direction:column">
 <sc-for list="{{ modal.users.list }}" as="u" hint-placeholder-count="6">
 <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #e7e1d3">
@@ -1133,16 +1134,14 @@ sc-for,sc-if{display:contents}
 <span style="flex:1; min-width:0; display:flex; flex-direction:column"><span style="font-size:16px; font-weight:700">{{ u.name }}</span><span style="font-size:14px; color:#76736b">{{ u.title }}</span></span>
 <sc-if value="{{ u.isYou }}" hint-placeholder-val="{{ false }}"><span style="padding:4px 12px; border-radius:999px; background:#e9e4d8; color:#1f1e1d; font-size:14px; font-weight:700">Admin · you</span></sc-if>
 <sc-if value="{{ u.notYou }}" hint-placeholder-val="{{ true }}">
-<select aria-label="Role for {{ u.name }}" value="{{ u.role }}" onChange="{{ u.onRole }}" style="height:42px; padding:0 10px; border:1px solid #d9d2c1; border-radius:10px; background:#f7f4ec; font:inherit; font-size:15px; color:#1f1e1d"><option value="Admin">Admin</option><option value="Editor">Editor</option><option value="Viewer">Viewer</option></select>
-<button class="hov" onClick="{{ u.remove }}" aria-label="Remove {{ u.name }}" style="width:40px; height:40px; border:0; border-radius:10px; background:#f7f4ec; color:#76736b; display:inline-flex; align-items:center; justify-content:center; cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round"><path d="{{ ic.trash }}"></path></svg></button>
+<select aria-label="Role for {{ u.name }}" value="{{ u.role }}" onChange="{{ u.onRole }}" style="height:42px; padding:0 10px; border:1px solid #d9d2c1; border-radius:10px; background:#f7f4ec; font:inherit; font-size:15px; color:#1f1e1d"><option value="admin">Admin</option><option value="exec">Exec</option><option value="analyst">Analyst</option><option value="member">No access yet</option></select>
 </sc-if>
 </div>
 </sc-for>
 </div>
-<form onSubmit="{{ modal.users.submitInvite }}" style="display:flex; flex-wrap:wrap; gap:10px">
-<input aria-label="Name or email to invite" placeholder="Invite by name or email" value="{{ modal.users.invite }}" onChange="{{ modal.users.onInvite }}" style="flex:1; min-width:200px; height:46px; padding:0 14px; border:1px solid #d9d2c1; border-radius:12px; font:inherit; font-size:15px; color:#1f1e1d">
-<button type="submit" class="btn-s" style="min-height:46px; padding:0 18px; border:1px solid #d9d2c1; border-radius:12px; background:#f7f4ec; font:inherit; font-size:15px; font-weight:700; color:#1f1e1d; cursor:pointer">Send invite</button>
-</form>
+<sc-if value="{{ modal.users.loading }}" hint-placeholder-val="{{ false }}"><div style="font-size:15px; color:#76736b">Loading people…</div></sc-if>
+<sc-if value="{{ modal.users.notAdmin }}" hint-placeholder-val="{{ false }}"><div style="font-size:15px; color:#76736b">Only an admin can see and change people’s roles.</div></sc-if>
+<div style="font-size:14px; color:#76736b">To add someone, send them the sign-up page. They appear here once they’ve signed up.</div>
 <div style="display:flex; justify-content:flex-end"><button class="btn-p" onClick="{{ modal.users.save }}" style="min-height:46px; padding:0 22px; border:0; border-radius:12px; background:#2b2a26; font:inherit; font-size:15px; font-weight:700; color:#ffffff; cursor:pointer">Done</button></div>
 </div>
 </sc-if>
@@ -1597,8 +1596,8 @@ const STARTERS = [
   { label: 'Which tools are we barely using?', icon: 'user' },
 ];
 
-// Who has access. Starts with just the signed-in person; invites add more.
-const TEAM = [];
+// Account roles, as stored on each user. Admins change them in Manage users.
+const ROLE_LABELS = { admin: 'Admin', exec: 'Exec', analyst: 'Analyst', member: 'No access yet' };
 
 const SOURCES = [
   { name: 'Usage telemetry', sub: 'Active users and sessions for all tools', status: 'Not connected' },
@@ -1638,7 +1637,7 @@ class Component extends DCLogic {
       atTab: 'all', atQuick: 'all', atSort: 'priority',
       modal: null, note: '', cmpId: '',
       form: { name: '', dept: 'fin', owner: '', stage: 'Planned', value: '', run: '', build: '', desc: '', error: '' },
-      team: [{ name: ME.name, title: ME.role, role: 'Admin' }].concat(TEAM.map((t) => Object.assign({}, t))), invite: '',
+      people: null,
       panelOpen: false, panelMsgs: [], panelDraft: '', panelTyping: false,
       chats: SEED_CHATS.map((c) => Object.assign({}, c, { msgs: null })), activeChat: null, draft: '', typing: false,
       toast: null, period: '30', hidden: { rd: true, legal: true, other: true },
@@ -1749,6 +1748,21 @@ class Component extends DCLogic {
       .catch((e) => this.showToast(e.message));
   }
 
+  // ---------------- users and roles ----------------
+  openUsers() {
+    this.setState({ modal: { type: 'users' }, people: null });
+    if (ME.appRole !== 'admin') return;
+    api('GET', '/api/users').then((people) => this.setState({ people })).catch((e) => this.showToast(e.message));
+  }
+
+  setPersonRole(u, role) {
+    api('POST', `/api/users/${u.id}/role`, { role }).then(() => {
+      this.setState({ people: (this.st().people || []).map((x) => (x.id === u.id ? Object.assign({}, x, { role }) : x)) });
+      this.showToast(role === 'member' ? `${u.name} no longer has access` : `${u.name} is now an ${ROLE_LABELS[role]}`);
+      if (this.st().board.loaded) this.loadBoard();
+    }).catch((e) => { this.showToast(e.message); this.openUsers(); });
+  }
+
   // Runs a task action, then refreshes the board and the open task.
   taskAct(path, body, done) {
     return api('POST', path, body || {}).then(() => {
@@ -1814,7 +1828,8 @@ class Component extends DCLogic {
     if (col === 'assigned' && exec && t.status !== 'done') return this.openAssign(id);
     if (col === 'assigned' && exec && t.status === 'done') return this.openTask(id);
     if (col === 'accepted' && mine && t.status === 'assigned') return this.taskAct(`/api/tasks/${id}/accept`, null, 'Moved to in progress').catch(fail);
-    if (col === 'done' && mine && (t.status === 'assigned' || t.status === 'accepted')) return this.taskAct(`/api/tasks/${id}/complete`, null, 'Marked done. Nice work.').catch(fail);
+    if (col === 'done' && mine && t.status === 'assigned') return this.showToast('Accept the task first by moving it to In progress.');
+    if (col === 'done' && mine && t.status === 'accepted') return this.taskAct(`/api/tasks/${id}/complete`, null, 'Marked done. Nice work.').catch(fail);
     if (mine && (col === 'open' || col === 'queued')) return this.showToast('To hand a task back, open it and choose Decline with a reason.');
     if (exec && col === 'done') return this.showToast('Only the assigned analyst can mark a task done.');
     if (exec && col === 'accepted') return this.showToast('The analyst moves it to in progress when they accept it.');
@@ -2414,7 +2429,7 @@ class Component extends DCLogic {
       onStatus: (e) => this.setFilter('status', e.target.value), onOwner: (e) => this.setFilter('owner', e.target.value), onStage: (e) => this.setFilter('stage', e.target.value),
       onSort: (e) => this.setState({ sortKey: e.target.value, sortDir: 1 }),
       clearAll: () => this.clearFilters(),
-      exportCsv: () => this.exportCsv(), add: () => this.setState({ modal: { type: 'add' } }), users: () => this.setState({ modal: { type: 'users' } }),
+      exportCsv: () => this.exportCsv(), add: () => this.setState({ modal: { type: 'add' } }), users: () => this.openUsers(),
     };
   }
 
@@ -2776,7 +2791,8 @@ class Component extends DCLogic {
     return {
       exec, offline, ready: !offline && b.loaded,
       offlineTxt: 'This page was opened as a file, so there’s no one signed in. Run npm start and open http://localhost:3000 to use the board.',
-      sub: exec ? (summary || 'Everything your analysts are working on. Drag a card to To do to assign it.') : (summary || 'Your tasks. Drag a card along as you work on it.'),
+      sub: ME.appRole === 'member' ? 'You don’t have a role yet. Ask an admin to make you an analyst or exec.'
+        : exec ? (summary || 'Everything your analysts are working on. Drag a card to To do to assign it.') : (summary || 'Your tasks. Drag a card along as you work on it.'),
       refresh: () => this.loadBoard().then(() => this.showToast('Board is up to date')),
       newTask: () => this.setState({ modal: { type: 'newTask' }, nt: { title: '', desc: '', priority: 'Medium', category: 'general', error: '' } }),
       notices: b.notices.slice(0, 4).map((n) => ({ msg: n.message, when: ago(n.created_at), hasTask: !!n.task_id, open: () => this.openTask(n.task_id),
@@ -2813,7 +2829,7 @@ class Component extends DCLogic {
     const actions = [];
     if (mine && t.status === 'assigned') actions.push(btn('Accept', () => act('accept', null, 'Accepted. It’s in progress.').catch((e) => this.showToast(e.message)), 'primary'));
     if (mine && open) {
-      actions.push(btn('Mark done', () => act('complete', null, 'Marked done. Nice work.').catch((e) => this.showToast(e.message)), t.status === 'accepted' ? 'primary' : ''));
+      if (t.status === 'accepted') actions.push(btn('Mark done', () => act('complete', null, 'Marked done. Nice work.').catch((e) => this.showToast(e.message)), 'primary'));
       actions.push(btn('Ask a question', form('clarify')), btn('Request more time', form('extension')), btn('Escalate', form('escalate')), btn('Decline', form('decline'), 'danger'));
     }
     if (exec && t.status !== 'done' && t.status !== 'cancelled') actions.push(btn(t.assignee_id ? 'Reassign' : 'Assign', () => this.openAssign(t.id), t.assignee_id ? '' : 'primary'));
@@ -2964,13 +2980,12 @@ class Component extends DCLogic {
       onName: setF('name'), onDept: setF('dept'), onOwner: setF('owner'), onStage: setF('stage'), onValue: setF('value'), onRun: setF('run'), onBuild: setF('build'), onDesc: setF('desc'),
       submit: (e) => this.addProject(e) };
     // users
+    const isAdmin = ME.appRole === 'admin';
     const users = {
-      list: s.team.map((u, i) => ({ name: u.name, title: u.title, role: u.role, ini: initials(u.name), isYou: i === 0, notYou: i !== 0,
-        onRole: (e) => { const team = this.st().team.map((x, j) => (j === i ? Object.assign({}, x, { role: e.target.value }) : x)); this.setState({ team }); },
-        remove: () => this.setState({ team: this.st().team.filter((_, j) => j !== i) }) })),
-      invite: s.invite, onInvite: (e) => this.setState({ invite: e.target.value }),
-      submitInvite: (e) => { if (e && e.preventDefault) e.preventDefault(); const v = this.st().invite.trim(); if (!v) return; this.setState({ team: this.st().team.concat([{ name: v, title: 'Invited · pending', role: 'Viewer' }]), invite: '' }); this.showToast(`Invite sent to ${v}`); },
-      save: () => { this.setState({ modal: null }); this.showToast('Access updated'); },
+      isAdmin, notAdmin: !isAdmin, loading: isAdmin && !s.people,
+      list: (s.people || []).map((u) => ({ name: u.name, title: u.email, role: u.role, ini: initials(u.name), isYou: u.id === ME.id, notYou: u.id !== ME.id,
+        onRole: (e) => this.setPersonRole(u, e.target.value) })),
+      save: () => this.setState({ modal: null }),
     };
     // compare
     const A = M.byId[s.toolId] || M.tools[0], B = M.byId[s.cmpId] || M.tools.find((x) => x !== A) || A;
@@ -3029,6 +3044,8 @@ class Component extends DCLogic {
       setExec: () => this.setState({ prefs: Object.assign({}, p, { depth: 'exec' }), analyst: false }),
       setAnalyst: () => this.setState({ prefs: Object.assign({}, p, { depth: 'analyst' }), analyst: true }),
       sources: SOURCES, reset: () => this.reset(),
+      roleLabel: ROLE_LABELS[ME.appRole] || 'No access yet', isAdmin: ME.appRole === 'admin', users: () => this.openUsers(),
+      roleSub: { admin: 'Assigns work and manages who has access', exec: 'Assigns work to analysts', analyst: 'Works on the tasks assigned to you' }[ME.appRole] || 'An admin needs to give you a role before you can use Assignments',
     };
   }
 
