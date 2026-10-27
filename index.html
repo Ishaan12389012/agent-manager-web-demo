@@ -780,6 +780,102 @@ sc-for,sc-if{display:contents}
 </aside>
 </div>
 </sc-if>
+<sc-if value="{{ sc.board }}" hint-placeholder-val="{{ false }}">
+<div class="fade" style="display:flex; flex-direction:column; gap:22px; min-width:0">
+<div class="stack-sm" style="display:flex; align-items:flex-end; flex-wrap:wrap; gap:16px">
+<div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:8px"><h1 class="h1" style="margin:0; font-size:32px; font-weight:700; letter-spacing:-0.01em">Assignments</h1><p style="margin:0; font-size:17px; color:#5e5c56">{{ bd.sub }}</p></div>
+<div style="display:flex; gap:10px">
+<button class="btn-s" onClick="{{ bd.refresh }}" aria-label="Refresh board" style="min-height:46px; padding:0 14px; border:1px solid #d9d2c1; border-radius:12px; background:#f7f4ec; color:#1f1e1d; display:inline-flex; align-items:center; gap:8px; font:inherit; font-size:15px; font-weight:700; cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="{{ svg }}"><path d="{{ ic.refresh }}"></path></svg><span class="hide-sm">Refresh</span></button>
+<sc-if value="{{ bd.exec }}" hint-placeholder-val="{{ true }}"><button class="btn-p" onClick="{{ bd.newTask }}" style="min-height:46px; padding:0 20px; border:0; border-radius:12px; background:#2b2a26; color:#ffffff; display:inline-flex; align-items:center; gap:8px; font:inherit; font-size:15px; font-weight:700; cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="{{ svg }}"><path d="{{ ic.plus }}"></path></svg>New task</button></sc-if>
+</div>
+</div>
+
+<sc-if value="{{ bd.offline }}" hint-placeholder-val="{{ false }}">
+<div style="padding:32px 28px; background:#f7f4ec; border:1px solid #e2dccd; border-radius:14px; display:flex; flex-direction:column; gap:8px"><div style="font-size:18px; font-weight:700">Assignments need the server</div><div style="font-size:15px; color:#76736b">{{ bd.offlineTxt }}</div></div>
+</sc-if>
+
+<sc-if value="{{ bd.ready }}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{ bd.hasNotices }}" hint-placeholder-val="{{ false }}">
+<section aria-label="Alerts" style="display:flex; flex-direction:column; gap:8px">
+<sc-for list="{{ bd.notices }}" as="nt" hint-placeholder-count="2">
+<div role="status" style="display:flex; align-items:center; gap:12px; padding:12px 12px 12px 18px; border-radius:12px; background:#fdf3dc; color:#5c3a04; font-size:15px">
+<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="{{ svg }}; flex:none"><path d="{{ ic.alert }}"></path></svg>
+<span style="flex:1; min-width:0">{{ nt.msg }} <span style="color:#9a7a3c">· {{ nt.when }}</span></span>
+<sc-if value="{{ nt.hasTask }}" hint-placeholder-val="{{ true }}"><button class="lnk" onClick="{{ nt.open }}" style="padding:0 6px; border:0; background:none; font:inherit; font-weight:700; color:#5c3a04; cursor:pointer">Open</button></sc-if>
+<button onClick="{{ nt.dismiss }}" aria-label="Dismiss alert" style="width:34px; height:34px; border:0; border-radius:9px; background:transparent; color:#9a5b05; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; flex:none"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style="{{ svg }}"><path d="{{ ic.x }}"></path></svg></button>
+</div>
+</sc-for>
+</section>
+</sc-if>
+
+<div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px">
+<div class="fw" style="position:relative; flex:1 1 220px; max-width:320px"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="position:absolute; left:13px; top:13px; color:#76736b; {{ svg }}; pointer-events:none"><path d="{{ ic.search }}"></path></svg><input type="search" aria-label="Filter tasks" placeholder="Filter tasks…" value="{{ bd.f.q }}" onChange="{{ bd.f.onQ }}" style="width:100%; height:44px; padding:0 12px 0 40px; border:1px solid #e2dccd; border-radius:12px; background:#f7f4ec; font-size:15px; color:#1f1e1d"></div>
+<sc-for list="{{ bd.f.prs }}" as="p" hint-placeholder-count="4">
+<button onClick="{{ p.click }}" aria-pressed="{{ p.pressed }}" style="min-height:44px; padding:0 16px; border:1px solid {{ p.border }}; border-radius:999px; background:{{ p.bg }}; color:{{ p.fg }}; display:inline-flex; align-items:center; gap:8px; font:inherit; font-size:15px; cursor:pointer"><sc-if value="{{ p.hasDot }}" hint-placeholder-val="{{ true }}"><span style="width:8px; height:8px; border-radius:50%; background:{{ p.dot }}"></span></sc-if>{{ p.label }}</button>
+</sc-for>
+<sc-if value="{{ bd.exec }}" hint-placeholder-val="{{ true }}">
+<select aria-label="Filter by assignee" value="{{ bd.f.who }}" onChange="{{ bd.f.onWho }}" style="height:44px; padding:0 12px; border:1px solid #e2dccd; border-radius:12px; background:#f7f4ec; font:inherit; font-size:15px; color:#1f1e1d; cursor:pointer">
+<sc-for list="{{ bd.f.whoOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.id }}">{{ o.name }}</option></sc-for>
+</select>
+</sc-if>
+<button onClick="{{ bd.f.toggleOverdue }}" aria-pressed="{{ bd.f.overduePressed }}" style="min-height:44px; padding:0 16px; border:1px solid {{ bd.f.overdueBorder }}; border-radius:999px; background:{{ bd.f.overdueBg }}; color:{{ bd.f.overdueFg }}; font:inherit; font-size:15px; cursor:pointer">Overdue only</button>
+</div>
+
+<sc-if value="{{ bd.exec }}" hint-placeholder-val="{{ true }}">
+<section aria-labelledby="h-team" style="display:flex; flex-direction:column; gap:12px">
+<div style="display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 12px"><h2 id="h-team" style="margin:0; font-size:18px; font-weight:700">Analysts</h2><span style="font-size:14px; color:#76736b">Ranked by trust score. Workload decides between equals.</span></div>
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:12px">
+<sc-for list="{{ bd.team }}" as="a" hint-placeholder-count="4">
+<div style="display:flex; flex-direction:column; gap:8px; padding:14px 16px; background:#f7f4ec; border:1px solid #e2dccd; border-radius:12px">
+<div style="display:flex; align-items:center; gap:10px">
+<span style="width:34px; height:34px; border-radius:50%; background:{{ a.avBg }}; color:#ffffff; font-size:12px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; flex:none">{{ a.ini }}</span>
+<span style="flex:1; min-width:0; display:flex; flex-direction:column"><span style="font-size:15px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ a.name }}</span><span style="font-size:13px; color:{{ a.freeC }}">{{ a.load }}</span></span>
+<span style="padding:2px 9px; border-radius:999px; background:{{ a.tierBg }}; color:{{ a.tierFg }}; font-size:12px; font-weight:700">{{ a.tier }}</span>
+</div>
+<div style="display:flex; align-items:center; gap:10px"><span role="meter" aria-label="Trust score" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ a.score }}" style="flex:1; height:6px; border-radius:999px; background:#e2dccd; overflow:hidden"><span style="display:block; height:100%; width:{{ a.pct }}; background:{{ a.bar }}"></span></span><span style="min-width:34px; text-align:right; font-size:13px; font-weight:700">{{ a.score }}</span></div>
+<sc-if value="{{ a.hasProfile }}" hint-placeholder-val="{{ false }}"><p title="{{ a.profile }}" style="margin:0; font-size:13px; line-height:1.45; color:#5e5c56; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden">{{ a.profile }}</p></sc-if>
+</div>
+</sc-for>
+<sc-if value="{{ bd.noTeam }}" hint-placeholder-val="{{ false }}"><p style="margin:0; padding:14px 16px; background:#f7f4ec; border:1px solid #e2dccd; border-radius:12px; font-size:14px; line-height:1.5; color:#76736b">No analysts yet. An admin can give someone the analyst role.</p></sc-if>
+</div>
+</section>
+</sc-if>
+
+<div style="overflow-x:auto; min-width:0; padding-bottom:6px">
+<div role="list" aria-label="Task board" style="display:grid; grid-template-columns:repeat({{ bd.colCount }}, minmax(220px, 1fr)); gap:14px; min-width:{{ bd.minWidth }}">
+<sc-for list="{{ bd.cols }}" as="col" hint-placeholder-count="5">
+<section aria-label="{{ col.label }}" onDragOver="{{ col.onDragOver }}" onDrop="{{ col.onDrop }}" style="display:flex; flex-direction:column; gap:10px; min-height:420px; padding:12px; border-radius:14px; background:{{ col.bg }}; outline:2px dashed {{ col.outline }}; outline-offset:-2px; transition:background .12s ease">
+<header style="display:flex; align-items:center; gap:8px; padding:4px 4px 2px">
+<span style="width:9px; height:9px; border-radius:50%; background:{{ col.dot }}; flex:none"></span>
+<h2 style="margin:0; flex:1; font-size:16px; font-weight:600">{{ col.label }}</h2>
+<span style="min-width:26px; height:24px; padding:0 8px; border-radius:999px; background:#dcd5c4; color:#3d3b36; font-size:13px; font-weight:700; display:inline-flex; align-items:center; justify-content:center">{{ col.count }}</span>
+</header>
+<sc-if value="{{ col.hasHint }}" hint-placeholder-val="{{ false }}"><p style="margin:0 4px; font-size:13px; line-height:1.45; color:#8a867c">{{ col.hint }}</p></sc-if>
+<sc-for list="{{ col.cards }}" as="c" hint-placeholder-count="2">
+<article class="lift" role="listitem" tabindex="0" draggable="{{ c.drag }}" onDragStart="{{ c.onDragStart }}" onDragEnd="{{ c.onDragEnd }}" onClick="{{ c.open }}" onKeyDown="{{ c.onKey }}" aria-label="{{ c.key }}: {{ c.title }}" style="position:relative; display:flex; flex-direction:column; gap:10px; padding:14px 14px 12px 18px; background:#f7f4ec; border:1px solid #e2dccd; border-radius:12px; overflow:hidden; cursor:{{ c.cursor }}; opacity:{{ c.opacity }}">
+<span style="position:absolute; left:0; top:0; bottom:0; width:4px; background:{{ c.edge }}"></span>
+<div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#76736b"><span style="font-weight:700; letter-spacing:0.02em">{{ c.key }}</span><span style="flex:1"></span><span style="padding:2px 9px; border-radius:999px; background:{{ c.prBg }}; color:{{ c.prFg }}; font-weight:700">{{ c.pr }}</span></div>
+<div style="font-size:16px; font-weight:600; line-height:1.35; color:#1f1e1d">{{ c.title }}</div>
+<div style="display:flex; flex-wrap:wrap; gap:6px">
+<span style="padding:2px 9px; border-radius:7px; background:#e9e4d8; color:#5e5c56; font-size:13px">{{ c.cat }}</span>
+<sc-for list="{{ c.badges }}" as="bg" hint-placeholder-count="1"><span style="padding:2px 9px; border-radius:7px; background:{{ bg.bg }}; color:{{ bg.fg }}; font-size:13px; font-weight:600">{{ bg.txt }}</span></sc-for>
+</div>
+<div style="display:flex; align-items:center; gap:8px; padding-top:8px; border-top:1px solid #ece7db">
+<span style="display:inline-flex; align-items:center; gap:5px; font-size:13px; color:{{ c.dueC }}; font-weight:{{ c.dueW }}"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" style="{{ svg }}"><path d="{{ ic.clock }}"></path></svg>{{ c.dueTxt }}</span>
+<span style="flex:1"></span>
+<sc-if value="{{ c.hasAssignee }}" hint-placeholder-val="{{ true }}"><span title="{{ c.assignee }}" aria-label="Assigned to {{ c.assignee }}" style="width:30px; height:30px; border-radius:50%; background:{{ c.avBg }}; color:#ffffff; font-size:12px; font-weight:700; display:inline-flex; align-items:center; justify-content:center">{{ c.ini }}</span></sc-if>
+<sc-if value="{{ c.noAssignee }}" hint-placeholder-val="{{ false }}"><span title="Unassigned" aria-label="Unassigned" style="width:30px; height:30px; border-radius:50%; border:1.5px dashed #b8af9c; color:#a8a397; display:inline-flex; align-items:center; justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" style="{{ svg }}"><path d="{{ ic.user }}"></path></svg></span></sc-if>
+</div>
+</article>
+</sc-for>
+<sc-if value="{{ col.empty }}" hint-placeholder-val="{{ false }}"><div style="padding:18px 10px; border:1.5px dashed #d3cbb8; border-radius:12px; text-align:center; font-size:14px; color:#8a867c">{{ col.emptyTxt }}</div></sc-if>
+</section>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
 <sc-if value="{{ copilot.page }}" hint-placeholder-val="{{ false }}">
 <div class="fade" style="display:flex; flex-direction:column; min-height:calc(100vh - 170px); background:#f7f4ec; border:1px solid #e2dccd; border-radius:14px; overflow:hidden">
 <iframe title="Ask Verdict chatbot" src="{{ copilot.src }}" style="flex:1; width:100%; min-height:520px; border:0; background:#f7f4ec"></iframe>
@@ -853,8 +949,9 @@ sc-for,sc-if{display:contents}
 
 <section aria-label="Profile" style="display:flex; align-items:center; flex-wrap:wrap; gap:18px; padding:24px; background:#f7f4ec; border:1px solid #e2dccd; border-radius:14px">
 <span style="width:64px; height:64px; border-radius:50%; background:#2b2a26; color:#ffffff; font-size:21px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; flex:none">{{ user.ini }}</span>
-<div style="flex:1; min-width:200px; display:flex; flex-direction:column; gap:2px"><span style="font-size:20px; font-weight:700">{{ user.name }}</span><span style="font-size:15px; color:#5e5c56">Chief Product Officer · sees all nine departments</span></div>
-<span style="padding:5px 12px; border-radius:999px; background:#e9e4d8; color:#1f1e1d; font-size:14px; font-weight:700">Admin</span>
+<div style="flex:1; min-width:200px; display:flex; flex-direction:column; gap:2px"><span style="font-size:20px; font-weight:700">{{ user.name }}</span><span style="font-size:15px; color:#5e5c56">{{ st.roleSub }}</span></div>
+<span style="padding:5px 12px; border-radius:999px; background:#e9e4d8; color:#1f1e1d; font-size:14px; font-weight:700">{{ st.roleLabel }}</span>
+<sc-if value="{{ st.isAdmin }}" hint-placeholder-val="{{ false }}"><button class="btn-s" onClick="{{ st.users }}" style="min-height:44px; padding:0 16px; border:1px solid #d9d2c1; border-radius:12px; background:#f7f4ec; font:inherit; font-size:15px; font-weight:700; color:#1f1e1d; cursor:pointer">Manage users</button></sc-if>
 </section>
 
 <section aria-labelledby="h-brief" style="display:flex; flex-direction:column; padding:8px 24px; background:#f7f4ec; border:1px solid #e2dccd; border-radius:14px">
@@ -1029,7 +1126,7 @@ sc-for,sc-if{display:contents}
 
 <sc-if value="{{ modal.isUsers }}" hint-placeholder-val="{{ false }}">
 <div style="display:flex; flex-direction:column; gap:16px; padding:28px 30px">
-<div style="display:flex; align-items:flex-start; gap:16px"><div style="flex:1"><h2 id="dlg-title" style="margin:0; font-size:24px; font-weight:700">Manage users</h2><p style="margin:4px 0 0; font-size:15px; color:#76736b">Who can see Verdict, and who can approve changes.</p></div><button class="hov" onClick="{{ modal.close }}" aria-label="Close" style="width:40px; height:40px; border:0; border-radius:10px; background:#f7f4ec; color:#5e5c56; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; flex:none"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round"><path d="{{ ic.x }}"></path></svg></button></div>
+<div style="display:flex; align-items:flex-start; gap:16px"><div style="flex:1"><h2 id="dlg-title" style="margin:0; font-size:24px; font-weight:700">Manage users</h2><p style="margin:4px 0 0; font-size:15px; color:#76736b">Admins and execs assign work, analysts do it. New sign-ups have no access until you give them a role.</p></div><button class="hov" onClick="{{ modal.close }}" aria-label="Close" style="width:40px; height:40px; border:0; border-radius:10px; background:#f7f4ec; color:#5e5c56; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; flex:none"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round"><path d="{{ ic.x }}"></path></svg></button></div>
 <div style="display:flex; flex-direction:column">
 <sc-for list="{{ modal.users.list }}" as="u" hint-placeholder-count="6">
 <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #e7e1d3">
@@ -1037,16 +1134,14 @@ sc-for,sc-if{display:contents}
 <span style="flex:1; min-width:0; display:flex; flex-direction:column"><span style="font-size:16px; font-weight:700">{{ u.name }}</span><span style="font-size:14px; color:#76736b">{{ u.title }}</span></span>
 <sc-if value="{{ u.isYou }}" hint-placeholder-val="{{ false }}"><span style="padding:4px 12px; border-radius:999px; background:#e9e4d8; color:#1f1e1d; font-size:14px; font-weight:700">Admin · you</span></sc-if>
 <sc-if value="{{ u.notYou }}" hint-placeholder-val="{{ true }}">
-<select aria-label="Role for {{ u.name }}" value="{{ u.role }}" onChange="{{ u.onRole }}" style="height:42px; padding:0 10px; border:1px solid #d9d2c1; border-radius:10px; background:#f7f4ec; font:inherit; font-size:15px; color:#1f1e1d"><option value="Admin">Admin</option><option value="Editor">Editor</option><option value="Viewer">Viewer</option></select>
-<button class="hov" onClick="{{ u.remove }}" aria-label="Remove {{ u.name }}" style="width:40px; height:40px; border:0; border-radius:10px; background:#f7f4ec; color:#76736b; display:inline-flex; align-items:center; justify-content:center; cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round"><path d="{{ ic.trash }}"></path></svg></button>
+<select aria-label="Role for {{ u.name }}" value="{{ u.role }}" onChange="{{ u.onRole }}" style="height:42px; padding:0 10px; border:1px solid #d9d2c1; border-radius:10px; background:#f7f4ec; font:inherit; font-size:15px; color:#1f1e1d"><option value="admin">Admin</option><option value="exec">Exec</option><option value="analyst">Analyst</option><option value="member">No access yet</option></select>
 </sc-if>
 </div>
 </sc-for>
 </div>
-<form onSubmit="{{ modal.users.submitInvite }}" style="display:flex; flex-wrap:wrap; gap:10px">
-<input aria-label="Name or email to invite" placeholder="Invite by name or email" value="{{ modal.users.invite }}" onChange="{{ modal.users.onInvite }}" style="flex:1; min-width:200px; height:46px; padding:0 14px; border:1px solid #d9d2c1; border-radius:12px; font:inherit; font-size:15px; color:#1f1e1d">
-<button type="submit" class="btn-s" style="min-height:46px; padding:0 18px; border:1px solid #d9d2c1; border-radius:12px; background:#f7f4ec; font:inherit; font-size:15px; font-weight:700; color:#1f1e1d; cursor:pointer">Send invite</button>
-</form>
+<sc-if value="{{ modal.users.loading }}" hint-placeholder-val="{{ false }}"><div style="font-size:15px; color:#76736b">Loading people…</div></sc-if>
+<sc-if value="{{ modal.users.notAdmin }}" hint-placeholder-val="{{ false }}"><div style="font-size:15px; color:#76736b">Only an admin can see and change people’s roles.</div></sc-if>
+<div style="font-size:14px; color:#76736b">To add someone, send them the sign-up page. They appear here once they’ve signed up.</div>
 <div style="display:flex; justify-content:flex-end"><button class="btn-p" onClick="{{ modal.users.save }}" style="min-height:46px; padding:0 22px; border:0; border-radius:12px; background:#2b2a26; font:inherit; font-size:15px; font-weight:700; color:#ffffff; cursor:pointer">Done</button></div>
 </div>
 </sc-if>
@@ -1067,6 +1162,148 @@ sc-for,sc-if{display:contents}
 </div>
 <p style="margin:0; font-size:15px; color:#3d3b36">{{ modal.cmp.summary }}</p>
 </div>
+</sc-if>
+
+<sc-if value="{{ modal.isTask }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex; flex-direction:column; gap:18px; padding:26px 30px 28px">
+<div style="display:flex; align-items:flex-start; gap:16px">
+<div style="flex:1; min-width:0"><div style="font-size:14px; font-weight:700; letter-spacing:0.02em; color:#76736b">{{ modal.tk.key }}</div><h2 id="dlg-title" style="margin:4px 0 0; font-size:24px; font-weight:700">{{ modal.tk.title }}</h2></div>
+<button class="hov" onClick="{{ modal.close }}" aria-label="Close" style="width:40px; height:40px; border:0; border-radius:10px; background:#f7f4ec; color:#5e5c56; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; flex:none"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="{{ svg }}"><path d="{{ ic.x }}"></path></svg></button>
+</div>
+<sc-if value="{{ modal.tk.loading }}" hint-placeholder-val="{{ false }}"><div style="padding:30px 0; font-size:15px; color:#76736b">Loading…</div></sc-if>
+<sc-if value="{{ modal.tk.ready }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex; flex-wrap:wrap; gap:8px">
+<span style="padding:4px 12px; border-radius:999px; background:{{ modal.tk.prBg }}; color:{{ modal.tk.prFg }}; font-size:14px; font-weight:700">{{ modal.tk.priority }} priority</span>
+<span style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:999px; background:#e9e4d8; color:#1f1e1d; font-size:14px; font-weight:600"><span style="width:8px; height:8px; border-radius:50%; background:{{ modal.tk.stDot }}"></span>{{ modal.tk.status }}</span>
+<span style="padding:4px 12px; border-radius:999px; background:#e9e4d8; color:#5e5c56; font-size:14px">{{ modal.tk.cat }}</span>
+<sc-if value="{{ modal.tk.override }}" hint-placeholder-val="{{ false }}"><span style="padding:4px 12px; border-radius:999px; background:#fdf3dc; color:#9a5b05; font-size:14px; font-weight:600">Assigned below tier</span></sc-if>
+</div>
+<div class="c1-md" style="display:grid; grid-template-columns:minmax(0, 1fr) 230px; gap:24px; align-items:start">
+<div style="display:flex; flex-direction:column; gap:18px; min-width:0">
+<p style="margin:0; font-size:16px; line-height:1.6; color:{{ modal.tk.descC }}">{{ modal.tk.desc }}</p>
+
+<sc-for list="{{ modal.tk.requests }}" as="rq" hint-placeholder-count="1">
+<div style="display:flex; flex-direction:column; gap:10px; padding:14px 16px; border-radius:12px; background:#fdf3dc; color:#5c3a04">
+<div style="font-size:15px"><strong>{{ rq.head }}</strong> {{ rq.reason }}</div>
+<sc-if value="{{ rq.hasExtra }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px">{{ rq.extra }}</div></sc-if>
+<sc-if value="{{ rq.canReview }}" hint-placeholder-val="{{ true }}"><div style="display:flex; gap:8px">
+<button class="btn-p" onClick="{{ rq.approve }}" style="min-height:40px; padding:0 16px; border:0; border-radius:10px; background:#2b2a26; color:#ffffff; font:inherit; font-size:14px; font-weight:700; cursor:pointer">{{ rq.approveLabel }}</button>
+<button class="btn-s" onClick="{{ rq.reject }}" style="min-height:40px; padding:0 16px; border:1px solid #d9c9a3; border-radius:10px; background:#fffaf0; color:#5c3a04; font:inherit; font-size:14px; font-weight:700; cursor:pointer">{{ rq.rejectLabel }}</button>
+</div></sc-if>
+<sc-if value="{{ rq.waiting }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px; color:#9a7a3c">Waiting for an exec to review.</div></sc-if>
+</div>
+</sc-for>
+
+<sc-if value="{{ modal.tk.hasActions }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex; flex-wrap:wrap; gap:8px">
+<sc-for list="{{ modal.tk.actions }}" as="ac" hint-placeholder-count="3">
+<button class="{{ ac.cls }}" onClick="{{ ac.click }}" style="min-height:42px; padding:0 16px; border:1px solid {{ ac.border }}; border-radius:11px; background:{{ ac.bg }}; color:{{ ac.fg }}; font:inherit; font-size:14px; font-weight:700; cursor:pointer">{{ ac.label }}</button>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ modal.tf.show }}" hint-placeholder-val="{{ false }}">
+<form onSubmit="{{ modal.tf.submit }}" style="display:flex; flex-direction:column; gap:12px; padding:16px; border:1px solid #e2dccd; border-radius:12px; background:#f2eee5">
+<div style="font-size:15px; font-weight:700">{{ modal.tf.title }}</div>
+<sc-if value="{{ modal.tf.hasHelp }}" hint-placeholder-val="{{ false }}"><p style="margin:-6px 0 0; font-size:14px; line-height:1.5; color:#5e5c56">{{ modal.tf.help }}</p></sc-if>
+<sc-if value="{{ modal.tf.isDecline }}" hint-placeholder-val="{{ false }}">
+<select aria-label="Reason" value="{{ modal.tf.category }}" onChange="{{ modal.tf.onCat }}" style="height:44px; padding:0 12px; border:1px solid #d9d2c1; border-radius:10px; background:#f7f4ec; font:inherit; font-size:15px; color:#1f1e1d">
+<option value="outside_expertise">Outside my expertise</option><option value="at_capacity">At capacity</option><option value="conflict_of_interest">Conflict of interest</option><option value="missing_information">Missing information</option><option value="other">Other</option>
+</select>
+</sc-if>
+<sc-if value="{{ modal.tf.isExt }}" hint-placeholder-val="{{ false }}"><label style="display:flex; flex-direction:column; gap:6px; font-size:14px; font-weight:700; color:#3d3b36">New due date<input type="datetime-local" value="{{ modal.tf.date }}" onChange="{{ modal.tf.onDate }}" style="height:44px; padding:0 12px; border:1px solid #d9d2c1; border-radius:10px; background:#f7f4ec; font:inherit; font-size:15px; font-weight:400; color:#1f1e1d"></label></sc-if>
+<textarea aria-label="{{ modal.tf.title }}" rows="3" placeholder="{{ modal.tf.placeholder }}" value="{{ modal.tf.text }}" onChange="{{ modal.tf.onText }}" style="padding:10px 12px; border:1px solid #d9d2c1; border-radius:10px; background:#f7f4ec; font:inherit; font-size:15px; color:#1f1e1d; resize:vertical"></textarea>
+<sc-if value="{{ modal.tf.hasError }}" hint-placeholder-val="{{ false }}"><div role="alert" style="padding:8px 12px; border-radius:9px; background:#fdecec; color:#b91c1c; font-size:14px">{{ modal.tf.error }}</div></sc-if>
+<div style="display:flex; justify-content:flex-end; gap:8px">
+<button type="button" class="btn-s" onClick="{{ modal.tf.cancel }}" style="min-height:40px; padding:0 14px; border:1px solid #d9d2c1; border-radius:10px; background:#f7f4ec; font:inherit; font-size:14px; font-weight:700; color:#1f1e1d; cursor:pointer">Cancel</button>
+<button type="submit" class="btn-p" style="min-height:40px; padding:0 16px; border:0; border-radius:10px; background:#2b2a26; font:inherit; font-size:14px; font-weight:700; color:#ffffff; cursor:pointer">{{ modal.tf.submitLabel }}</button>
+</div>
+</form>
+</sc-if>
+
+<section aria-labelledby="h-act" style="display:flex; flex-direction:column; gap:2px">
+<h3 id="h-act" style="margin:0 0 8px; font-size:16px; font-weight:700">Activity</h3>
+<sc-for list="{{ modal.tk.events }}" as="ev" hint-placeholder-count="3">
+<div style="display:flex; gap:12px; padding:9px 0; border-top:1px solid #e7e1d3">
+<span style="width:28px; height:28px; border-radius:50%; background:#e9e4d8; color:#5e5c56; font-size:11px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; flex:none">{{ ev.ini }}</span>
+<div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:3px">
+<div style="font-size:14px; color:#3d3b36"><strong style="color:#1f1e1d">{{ ev.who }}</strong> {{ ev.what }} <span style="color:#8a867c">· {{ ev.when }}</span><sc-if value="{{ ev.hasDelta }}" hint-placeholder-val="{{ false }}"> <span style="margin-left:4px; padding:1px 7px; border-radius:999px; background:{{ ev.deltaBg }}; color:{{ ev.deltaFg }}; font-size:12px; font-weight:700">{{ ev.delta }} trust</span></sc-if></div>
+<sc-if value="{{ ev.hasNote }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px; line-height:1.5; color:#5e5c56">{{ ev.note }}</div></sc-if>
+</div>
+</div>
+</sc-for>
+</section>
+</div>
+
+<aside aria-label="Details" style="display:flex; flex-direction:column; gap:14px; padding:16px; border:1px solid #e2dccd; border-radius:12px">
+<sc-for list="{{ modal.tk.details }}" as="dt" hint-placeholder-count="5">
+<div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#8a867c">{{ dt.label }}</span><span style="font-size:15px; color:{{ dt.color }}">{{ dt.value }}</span><sc-if value="{{ dt.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; line-height:1.45; color:#76736b">{{ dt.sub }}</span></sc-if></div>
+</sc-for>
+</aside>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ modal.isAssign }}" hint-placeholder-val="{{ false }}">
+<form onSubmit="{{ modal.as.submit }}" style="display:flex; flex-direction:column; gap:16px; padding:26px 30px 28px">
+<div style="display:flex; align-items:flex-start; gap:16px">
+<div style="flex:1; min-width:0"><div style="font-size:14px; color:#76736b">{{ modal.as.key }} · {{ modal.as.priority }} priority</div><h2 id="dlg-title" style="margin:4px 0 0; font-size:24px; font-weight:700">Assign “{{ modal.as.title }}”</h2></div>
+<button type="button" class="hov" onClick="{{ modal.close }}" aria-label="Close" style="width:40px; height:40px; border:0; border-radius:10px; background:#f7f4ec; color:#5e5c56; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; flex:none"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="{{ svg }}"><path d="{{ ic.x }}"></path></svg></button>
+</div>
+<sc-if value="{{ modal.as.loading }}" hint-placeholder-val="{{ false }}"><div style="padding:24px 0; font-size:15px; color:#76736b">Ranking analysts…</div></sc-if>
+<sc-if value="{{ modal.as.ready }}" hint-placeholder-val="{{ true }}">
+<sc-for list="{{ modal.as.groups }}" as="g" hint-placeholder-count="2">
+<div role="radiogroup" aria-label="{{ g.label }}" style="display:flex; flex-direction:column; gap:8px">
+<div style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:#3d3b36"><sc-if value="{{ g.ai }}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{ ic.sparkle }}" style="fill:#2b2a26"></path></svg></sc-if>{{ g.label }}</div>
+<sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+<button type="button" role="radio" aria-checked="{{ r.checked }}" onClick="{{ r.pick }}" style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; border:{{ r.border }}; border-radius:12px; background:{{ r.bg }}; font:inherit; color:#1f1e1d; text-align:left; cursor:pointer; opacity:{{ r.opacity }}">
+<span style="width:36px; height:36px; border-radius:50%; background:{{ r.avBg }}; color:#ffffff; font-size:12px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; flex:none">{{ r.ini }}</span>
+<span style="flex:1; min-width:0; display:flex; flex-direction:column; gap:4px">
+<span style="display:flex; align-items:center; flex-wrap:wrap; gap:8px"><strong style="font-size:15px">{{ r.name }}</strong><span style="padding:1px 8px; border-radius:999px; background:{{ r.tierBg }}; color:{{ r.tierFg }}; font-size:12px; font-weight:700">{{ r.tier }} · {{ r.score }}</span><sc-for list="{{ r.flags }}" as="fl" hint-placeholder-count="1"><span style="padding:1px 8px; border-radius:999px; background:{{ fl.bg }}; color:{{ fl.fg }}; font-size:12px; font-weight:600">{{ fl.txt }}</span></sc-for></span>
+<span style="font-size:13px; color:#76736b">{{ r.stats }}</span>
+<sc-if value="{{ r.hasProfile }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; line-height:1.45; color:#5e5c56">{{ r.profile }}</span></sc-if>
+</span>
+<span aria-hidden="true" style="width:20px; height:20px; margin-top:8px; border-radius:50%; border:2px solid {{ r.ring }}; background:{{ r.dotBg }}; box-shadow:inset 0 0 0 3px #f7f4ec; flex:none"></span>
+</button>
+</sc-for>
+</div>
+</sc-for>
+<sc-if value="{{ modal.as.noAnalysts }}" hint-placeholder-val="{{ false }}"><div style="padding:16px; border-radius:12px; background:#e9e4d8; font-size:15px; color:#3d3b36">There are no analysts yet. An admin can give someone the analyst role.</div></sc-if>
+<sc-if value="{{ modal.as.hasWarning }}" hint-placeholder-val="{{ false }}">
+<div role="alert" style="display:flex; flex-direction:column; gap:10px; padding:14px 16px; border-radius:12px; background:#fdf3dc; color:#5c3a04">
+<div style="display:flex; gap:10px; font-size:15px; line-height:1.5"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="{{ svg }}; flex:none; margin-top:2px"><path d="{{ ic.alert }}"></path></svg><span>{{ modal.as.warning }}</span></div>
+<label style="display:flex; align-items:center; gap:10px; font-size:15px; font-weight:600; cursor:pointer"><input type="checkbox" checked="{{ modal.as.confirm }}" onClick="{{ modal.as.toggleConfirm }}" style="width:18px; height:18px">Assign anyway</label>
+</div>
+</sc-if>
+<label style="display:flex; flex-direction:column; gap:6px; font-size:14px; font-weight:700; color:#3d3b36">Due
+<input type="datetime-local" value="{{ modal.as.due }}" onChange="{{ modal.as.onDue }}" style="height:46px; padding:0 12px; border:1px solid #d9d2c1; border-radius:12px; background:#f7f4ec; font:inherit; font-size:15px; font-weight:400; color:#1f1e1d">
+<span style="font-size:13px; font-weight:400; color:#76736b">{{ modal.as.dueHint }}</span>
+</label>
+<sc-if value="{{ modal.as.hasError }}" hint-placeholder-val="{{ false }}"><div role="alert" style="padding:10px 14px; border-radius:10px; background:#fdecec; color:#b91c1c; font-size:15px">{{ modal.as.error }}</div></sc-if>
+<div style="display:flex; justify-content:flex-end; gap:10px">
+<button type="button" class="btn-s" onClick="{{ modal.close }}" style="min-height:46px; padding:0 18px; border:1px solid #d9d2c1; border-radius:12px; background:#f7f4ec; font:inherit; font-size:15px; font-weight:700; color:#1f1e1d; cursor:pointer">Cancel</button>
+<button type="submit" class="btn-p" style="min-height:46px; padding:0 22px; border:0; border-radius:12px; background:#2b2a26; font:inherit; font-size:15px; font-weight:700; color:#ffffff; cursor:pointer">{{ modal.as.submitLabel }}</button>
+</div>
+</sc-if>
+</form>
+</sc-if>
+
+<sc-if value="{{ modal.isNewTask }}" hint-placeholder-val="{{ false }}">
+<form onSubmit="{{ modal.nt.submit }}" style="display:flex; flex-direction:column; gap:16px; padding:28px 30px">
+<div style="display:flex; align-items:flex-start; gap:16px"><div style="flex:1"><h2 id="dlg-title" style="margin:0; font-size:24px; font-weight:700">New task</h2><p style="margin:4px 0 0; font-size:15px; color:#76736b">High priority tasks go straight to the best free Senior analyst. Others wait for you to assign them.</p></div><button type="button" class="hov" onClick="{{ modal.close }}" aria-label="Close" style="width:40px; height:40px; border:0; border-radius:10px; background:#f7f4ec; color:#5e5c56; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; flex:none"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="{{ svg }}"><path d="{{ ic.x }}"></path></svg></button></div>
+<div style="display:flex; flex-direction:column; gap:6px"><label for="nt-title" style="font-size:14px; font-weight:700; color:#3d3b36">Title</label><input id="nt-title" placeholder="e.g. Review the Finance bot's cost spike" value="{{ modal.nt.title }}" onChange="{{ modal.nt.onTitle }}" style="height:48px; padding:0 14px; border:1px solid #d9d2c1; border-radius:12px; font:inherit; font-size:16px; color:#1f1e1d"></div>
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px">
+<div style="display:flex; flex-direction:column; gap:6px"><label for="nt-pr" style="font-size:14px; font-weight:700; color:#3d3b36">Priority</label><select id="nt-pr" value="{{ modal.nt.priority }}" onChange="{{ modal.nt.onPriority }}" style="height:48px; padding:0 12px; border:1px solid #d9d2c1; border-radius:12px; background:#f7f4ec; font:inherit; font-size:16px; color:#1f1e1d"><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
+<div style="display:flex; flex-direction:column; gap:6px"><label for="nt-cat" style="font-size:14px; font-weight:700; color:#3d3b36">Kind of work</label><select id="nt-cat" value="{{ modal.nt.category }}" onChange="{{ modal.nt.onCategory }}" style="height:48px; padding:0 12px; border:1px solid #d9d2c1; border-radius:12px; background:#f7f4ec; font:inherit; font-size:16px; color:#1f1e1d"><sc-for list="{{ modal.nt.cats }}" as="o" hint-placeholder-count="5"><option value="{{ o.id }}">{{ o.name }}</option></sc-for></select></div>
+</div>
+<div style="display:flex; flex-direction:column; gap:6px"><label for="nt-desc" style="font-size:14px; font-weight:700; color:#3d3b36">Details (optional)</label><textarea id="nt-desc" rows="3" placeholder="What needs doing, and what does done look like?" value="{{ modal.nt.desc }}" onChange="{{ modal.nt.onDesc }}" style="padding:12px 14px; border:1px solid #d9d2c1; border-radius:12px; font:inherit; font-size:15px; color:#1f1e1d; resize:vertical"></textarea></div>
+<sc-if value="{{ modal.nt.hasError }}" hint-placeholder-val="{{ false }}"><div role="alert" style="padding:10px 14px; border-radius:10px; background:#fdecec; color:#b91c1c; font-size:15px">{{ modal.nt.error }}</div></sc-if>
+<div style="display:flex; justify-content:flex-end; gap:10px">
+<button type="button" class="btn-s" onClick="{{ modal.close }}" style="min-height:46px; padding:0 18px; border:1px solid #d9d2c1; border-radius:12px; background:#f7f4ec; font:inherit; font-size:15px; font-weight:700; color:#1f1e1d; cursor:pointer">Cancel</button>
+<button type="submit" class="btn-p" style="min-height:46px; padding:0 22px; border:0; border-radius:12px; background:#2b2a26; font:inherit; font-size:15px; font-weight:700; color:#ffffff; cursor:pointer">Create task</button>
+</div>
+</form>
 </sc-if>
 </section>
 </div>
@@ -1187,6 +1424,52 @@ const PRIORITY = {
   Medium: { bg: '#fdf3dc', fg: '#9a5b05', edge: '#d97706', rank: 1 },
   Low: { bg: '#e9e4d8', fg: '#1f1e1d', edge: '#2b2a26', rank: 2 },
 };
+
+// ---------- assignments board (data comes from /api/tasks; rules live in lib/assign.js on the server) ----------
+const TASK_CATS = { general: 'General', approval: 'Approval', usage_slipping: 'Usage slipping', cost_overrun: 'Cost overrun', investigation: 'Investigation' };
+const TASK_STATUS = {
+  open: { label: 'Unassigned', dot: '#a8a397' }, queued: { label: 'Queued', dot: '#dc2626' }, assigned: { label: 'To do', dot: '#d97706' },
+  accepted: { label: 'In progress', dot: '#2563eb' }, done: { label: 'Done', dot: '#15803d' }, cancelled: { label: 'Cancelled', dot: '#a8a397' },
+};
+const TIER_STYLE = { Senior: { bg: '#e3f1e6', fg: '#166534', bar: '#15803d' }, Mid: { bg: '#fdf3dc', fg: '#9a5b05', bar: '#d97706' }, Junior: { bg: '#e9e4d8', fg: '#5e5c56', bar: '#8a867c' } };
+const tierOf = (score) => (score >= 70 ? 'Senior' : score >= 40 ? 'Mid' : 'Junior');
+const AVATAR_COLORS = ['#7c5c3b', '#3f6b5c', '#5b5f8f', '#8a4f5c', '#4f6f8a', '#6b6b3f'];
+const avatarBg = (id) => AVATAR_COLORS[(Number(id) || 0) % AVATAR_COLORS.length];
+const isExecRole = () => ME.appRole === 'admin' || ME.appRole === 'exec';
+const TASK_EVENTS = {
+  created: 'created the task', assigned: 'assigned it', queued: 'queued it', accepted: 'accepted it', clarify: 'asked a question',
+  escalated: 'escalated it', extension_requested: 'asked for more time', extension_approved: 'approved more time', extension_rejected: 'turned down more time',
+  decline_requested: 'asked to decline', decline_approved: 'accepted the decline', decline_rejected: 'rejected the decline', completed: 'marked it done', reopened: 'reopened it',
+};
+
+const HOUR_MS = 36e5;
+const ago = (d) => {
+  const m = Math.round((Date.now() - new Date(d).getTime()) / 6e4);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  if (m < 60 * 24) return `${Math.round(m / 60)}h ago`;
+  return `${Math.round(m / 1440)}d ago`;
+};
+const shortDate = (d) => { const x = new Date(d); return `${x.getDate()} ${MON[x.getMonth()]}, ${String(x.getHours()).padStart(2, '0')}:${String(x.getMinutes()).padStart(2, '0')}`; };
+// Due date as words plus a colour: red when overdue, amber inside a day.
+const dueInfo = (d, done) => {
+  if (!d) return { txt: 'No due date', color: '#8a867c', weight: '400', overdue: false };
+  const h = (new Date(d).getTime() - Date.now()) / HOUR_MS;
+  if (done) return { txt: `Due ${shortDate(d)}`, color: '#8a867c', weight: '400', overdue: false };
+  if (h < 0) return { txt: `Overdue ${-h < 24 ? Math.ceil(-h) + 'h' : Math.round(-h / 24) + 'd'}`, color: '#b91c1c', weight: '700', overdue: true };
+  if (h < 24) return { txt: `Due in ${Math.max(1, Math.round(h))}h`, color: '#9a5b05', weight: '700', overdue: false };
+  if (h < 24 * 7) return { txt: `Due in ${Math.round(h / 24)}d`, color: '#5e5c56', weight: '400', overdue: false };
+  return { txt: `Due ${shortDate(d)}`, color: '#5e5c56', weight: '400', overdue: false };
+};
+// Value for a datetime-local input, in the viewer's time zone.
+const toLocalInput = (d) => { const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 16); };
+
+const api = (method, url, body) => fetch(url, {
+  method, credentials: 'same-origin', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined,
+}).then((r) => r.json().catch(() => ({})).then((d) => {
+  if (!r.ok) { const e = new Error(d.error || 'Something went wrong. Please try again.'); e.status = r.status; e.data = d; throw e; }
+  return d;
+}));
 
 // users: monthly active users; ut/ct/vt: % change vs last month for users / run cost / value.
 // run & value: £k per month now. build: one-off build cost (£k). ramp: months for value to reach today's level.
@@ -1313,8 +1596,8 @@ const STARTERS = [
   { label: 'Which tools are we barely using?', icon: 'user' },
 ];
 
-// Who has access. Starts with just the signed-in person; invites add more.
-const TEAM = [];
+// Account roles, as stored on each user. Admins change them in Manage users.
+const ROLE_LABELS = { admin: 'Admin', exec: 'Exec', analyst: 'Analyst', member: 'No access yet' };
 
 const SOURCES = [
   { name: 'Usage telemetry', sub: 'Active users and sessions for all tools', status: 'Not connected' },
@@ -1325,7 +1608,7 @@ const SOURCES = [
 
 const NO_TREND = { arrow: '', txt: '', color: '#8a867c' };
 const NO_DATA_TREND = { arrow: '', txt: 'No data yet', color: '#8a867c' };
-const SCREENS = ['home', 'projects', 'project', 'departments', 'attention', 'ask', 'settings'];
+const SCREENS = ['home', 'projects', 'project', 'departments', 'attention', 'board', 'ask', 'settings'];
 const lcFirst = (x) => (/^[A-Z][A-Z0-9]/.test(x) ? x : x.charAt(0).toLowerCase() + x.slice(1));
 const SVG_STROKE = 'fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round';
 
@@ -1354,12 +1637,14 @@ class Component extends DCLogic {
       atTab: 'all', atQuick: 'all', atSort: 'priority',
       modal: null, note: '', cmpId: '',
       form: { name: '', dept: 'fin', owner: '', stage: 'Planned', value: '', run: '', build: '', desc: '', error: '' },
-      team: [{ name: ME.name, title: ME.role, role: 'Admin' }].concat(TEAM.map((t) => Object.assign({}, t))), invite: '',
+      people: null,
       panelOpen: false, panelMsgs: [], panelDraft: '', panelTyping: false,
       chats: SEED_CHATS.map((c) => Object.assign({}, c, { msgs: null })), activeChat: null, draft: '', typing: false,
       toast: null, period: '30', hidden: { rd: true, legal: true, other: true },
       prefs: { weekly: true, slack: false, slip: true, waiting: true, payback: true, depth: 'exec' },
       added: [],
+      board: { loaded: false, tasks: [], analysts: [], notices: [] }, bf: { q: '', pr: 'all', who: '', overdue: false }, dragOver: null,
+      detail: null, tf: null, asg: null, nt: null,
     };
   }
 
@@ -1451,6 +1736,104 @@ class Component extends DCLogic {
   nav(screen, extra) {
     this.setState(Object.assign({ screen, searchOpen: false, notifOpen: false, profileOpen: false, navOpen: false, q: '' }, extra || {}));
     try { window.scrollTo(0, 0); } catch (e) { /* noop */ }
+    if (screen === 'board') this.loadBoard();
+  }
+
+  // ---------------- assignments board ----------------
+  loadBoard() {
+    if (!ME.signedIn) return Promise.resolve();
+    const exec = isExecRole();
+    return Promise.all([api('GET', '/api/tasks'), exec ? api('GET', '/api/analysts') : [], exec ? api('GET', '/api/notices') : []])
+      .then(([tasks, analysts, notices]) => this.setState({ board: { loaded: true, tasks, analysts, notices } }))
+      .catch((e) => this.showToast(e.message));
+  }
+
+  // ---------------- users and roles ----------------
+  openUsers() {
+    this.setState({ modal: { type: 'users' }, people: null });
+    if (ME.appRole !== 'admin') return;
+    api('GET', '/api/users').then((people) => this.setState({ people })).catch((e) => this.showToast(e.message));
+  }
+
+  setPersonRole(u, role) {
+    api('POST', `/api/users/${u.id}/role`, { role }).then(() => {
+      this.setState({ people: (this.st().people || []).map((x) => (x.id === u.id ? Object.assign({}, x, { role }) : x)) });
+      this.showToast(role === 'member' ? `${u.name} no longer has access` : `${u.name} is now an ${ROLE_LABELS[role]}`);
+      if (this.st().board.loaded) this.loadBoard();
+    }).catch((e) => { this.showToast(e.message); this.openUsers(); });
+  }
+
+  // Runs a task action, then refreshes the board and the open task.
+  taskAct(path, body, done) {
+    return api('POST', path, body || {}).then(() => {
+      if (done) this.showToast(done);
+      this.loadBoard();
+      const m = this.st().modal;
+      if (m && m.type === 'task') this.loadTask(m.id);
+    });
+  }
+
+  openTask(id) {
+    this.setState({ modal: { type: 'task', id }, detail: null, tf: null });
+    this.loadTask(id);
+  }
+
+  loadTask(id) {
+    return api('GET', `/api/tasks/${id}`).then((d) => {
+      const m = this.st().modal;
+      if (m && m.type === 'task' && m.id === id) this.setState({ detail: d });
+    }).catch((e) => { this.setState({ modal: null }); this.showToast(e.message); });
+  }
+
+  openAssign(id) {
+    this.setState({ modal: { type: 'assign', id }, asg: { data: null, pick: null, due: '', confirm: false, error: '' } });
+    api('GET', `/api/tasks/${id}/recommendations`).then((data) => {
+      const pick = data.recommended[0] ? data.recommended[0].id : null;
+      this.setState({ asg: { data, pick, due: toLocalInput(data.suggestedDueAt), confirm: false, error: '' } });
+    }).catch((e) => { this.setState({ modal: null }); this.showToast(e.message); });
+  }
+
+  submitAssign(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const s = this.st(), a = s.asg;
+    if (!a || !a.data) return;
+    if (!a.pick) { this.setState({ asg: Object.assign({}, a, { error: 'Pick an analyst.' }) }); return; }
+    const who = a.data.analysts.find((x) => x.id === a.pick);
+    if (who.warning && !a.confirm) { this.setState({ asg: Object.assign({}, a, { error: 'Tick “Assign anyway” to go ahead.' }) }); return; }
+    api('POST', `/api/tasks/${a.data.task.id}/assign`, { analystId: a.pick, dueAt: a.due ? new Date(a.due).toISOString() : null, confirmOverride: a.confirm })
+      .then(() => { this.setState({ modal: null, asg: null }); this.showToast(`Assigned to ${who.name}`); this.loadBoard(); })
+      .catch((err) => this.setState({ asg: Object.assign({}, this.st().asg, { error: err.message }) }));
+  }
+
+  submitNewTask(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const n = this.st().nt;
+    if (!n.title.trim()) { this.setState({ nt: Object.assign({}, n, { error: 'Give the task a title.' }) }); return; }
+    api('POST', '/api/tasks', { title: n.title, description: n.desc, priority: n.priority, category: n.category }).then((t) => {
+      this.setState({ modal: null, nt: null });
+      const who = (this.st().board.analysts.find((a) => a.id === t.assignee_id) || {}).name;
+      this.showToast(t.status === 'assigned' ? `Created and auto-assigned to ${who || 'an analyst'}` : t.status === 'queued' ? 'Created. No Senior analyst is free, so it’s queued.' : 'Task created');
+      this.loadBoard();
+    }).catch((err) => this.setState({ nt: Object.assign({}, this.st().nt, { error: err.message }) }));
+  }
+
+  // A card was dropped on a column. Each move maps to the action it means; anything else explains why not.
+  dropTask(id, col) {
+    const s = this.st();
+    this.setState({ dragOver: null });
+    const t = s.board.tasks.find((x) => x.id === id);
+    if (!t || t.status === col) return;
+    const exec = isExecRole(), mine = t.assignee_id === ME.id;
+    const fail = (e) => this.showToast(e.message);
+    if (col === 'assigned' && exec && t.status !== 'done') return this.openAssign(id);
+    if (col === 'assigned' && exec && t.status === 'done') return this.openTask(id);
+    if (col === 'accepted' && mine && t.status === 'assigned') return this.taskAct(`/api/tasks/${id}/accept`, null, 'Moved to in progress').catch(fail);
+    if (col === 'done' && mine && t.status === 'assigned') return this.showToast('Accept the task first by moving it to In progress.');
+    if (col === 'done' && mine && t.status === 'accepted') return this.taskAct(`/api/tasks/${id}/complete`, null, 'Marked done. Nice work.').catch(fail);
+    if (mine && (col === 'open' || col === 'queued')) return this.showToast('To hand a task back, open it and choose Decline with a reason.');
+    if (exec && col === 'done') return this.showToast('Only the assigned analyst can mark a task done.');
+    if (exec && col === 'accepted') return this.showToast('The analyst moves it to in progress when they accept it.');
+    this.showToast('That move isn’t available. Open the task to see what you can do.');
   }
   openTool(id) { const s = this.st(); this.nav('project', { toolId: id, back: s.screen === 'project' ? s.back : s.screen, analyst: s.prefs.depth === 'analyst' }); }
   openDept(id) { this.nav('projects', { f: { dept: id, status: '', owner: '', stage: '' } }); }
@@ -2046,7 +2429,7 @@ class Component extends DCLogic {
       onStatus: (e) => this.setFilter('status', e.target.value), onOwner: (e) => this.setFilter('owner', e.target.value), onStage: (e) => this.setFilter('stage', e.target.value),
       onSort: (e) => this.setState({ sortKey: e.target.value, sortDir: 1 }),
       clearAll: () => this.clearFilters(),
-      exportCsv: () => this.exportCsv(), add: () => this.setState({ modal: { type: 'add' } }), users: () => this.setState({ modal: { type: 'users' } }),
+      exportCsv: () => this.exportCsv(), add: () => this.setState({ modal: { type: 'add' } }), users: () => this.openUsers(),
     };
   }
 
@@ -2339,6 +2722,229 @@ class Component extends DCLogic {
     };
   }
 
+  vmBoard() {
+    const s = this.st(), b = s.board, f = s.bf, exec = isExecRole();
+    const setF = (patch) => this.setState({ bf: Object.assign({}, this.st().bf, patch) });
+    const q = f.q.trim().toLowerCase();
+    const tasks = b.tasks.filter((t) => t.status !== 'cancelled'
+      && (!q || `vd-${t.id} ${t.title} ${TASK_CATS[t.category] || t.category} ${t.assignee_name || ''}`.toLowerCase().indexOf(q) >= 0)
+      && (f.pr === 'all' || t.priority === f.pr)
+      && (!f.who || (f.who === 'none' ? !t.assignee_id : String(t.assignee_id) === f.who))
+      && (!f.overdue || (t.status !== 'done' && dueInfo(t.due_at).overdue)));
+    const rank = (t) => PRIORITY[t.priority].rank;
+    const card = (t) => {
+      const pr = PRIORITY[t.priority], due = dueInfo(t.due_at, t.status === 'done');
+      const canDrag = exec ? true : t.assignee_id === ME.id && (t.status === 'assigned' || t.status === 'accepted');
+      const badges = (t.pending_requests || []).map((r) => (r.kind === 'decline' ? { txt: 'Decline requested', bg: '#fdecec', fg: '#b91c1c' } : { txt: 'More time requested', bg: '#fdf3dc', fg: '#9a5b05' }));
+      if (t.tier_override) badges.push({ txt: 'Below tier', bg: '#fdf3dc', fg: '#9a5b05' });
+      if (t.status === 'queued') badges.push({ txt: `Waiting ${ago(t.queued_at).replace(' ago', '')}`, bg: '#fdecec', fg: '#b91c1c' });
+      if (t.assigned_by === 'auto' && t.status !== 'done') badges.push({ txt: 'Auto-assigned', bg: '#e8eefb', fg: '#1d4ed8' });
+      return {
+        key: `VD-${t.id}`, title: t.title, pr: t.priority, prBg: pr.bg, prFg: pr.fg, edge: pr.edge, cat: TASK_CATS[t.category] || cap(t.category), badges,
+        dueTxt: t.status === 'done' ? `Done ${ago(t.closed_at)}` : due.txt, dueC: due.color, dueW: due.weight,
+        hasAssignee: !!t.assignee_id, noAssignee: !t.assignee_id, assignee: t.assignee_name || '', ini: t.assignee_name ? initials(t.assignee_name) : '', avBg: avatarBg(t.assignee_id),
+        drag: canDrag ? 'true' : false, cursor: canDrag ? 'grab' : 'pointer', opacity: t.status === 'done' ? '0.78' : '1',
+        onDragStart: (e) => { this._dragId = t.id; try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(t.id)); } catch (err) { /* old browsers */ } },
+        onDragEnd: () => { this._dragId = null; if (this.st().dragOver) this.setState({ dragOver: null }); },
+        open: () => this.openTask(t.id),
+        onKey: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.openTask(t.id); } },
+      };
+    };
+    const defs = [
+      { key: 'open', label: 'Unassigned', hint: 'Medium and Low tasks wait here for you to pick someone.', emptyTxt: 'Nothing waiting', execOnly: true },
+      { key: 'queued', label: 'Queued', hint: 'High priority with no Senior analyst free. Falls back to Mid after 30 minutes.', emptyTxt: 'Queue is clear', execOnly: true },
+      { key: 'assigned', label: 'To do', emptyTxt: exec ? 'Drop a card here to assign it' : 'Nothing new for you' },
+      { key: 'accepted', label: 'In progress', emptyTxt: exec ? 'Nothing in progress' : 'Drag a task here to start it' },
+      { key: 'done', label: 'Done', emptyTxt: exec ? 'Nothing finished yet' : 'Drag a task here when it’s done' },
+    ].filter((c) => exec || !c.execOnly);
+    const cols = defs.map((c) => {
+      let list = tasks.filter((t) => t.status === c.key);
+      list = c.key === 'done'
+        ? list.sort((x, y) => new Date(y.closed_at) - new Date(x.closed_at)).slice(0, 20)
+        : list.sort((x, y) => rank(x) - rank(y) || new Date(x.due_at || 8.64e15) - new Date(y.due_at || 8.64e15));
+      const over = s.dragOver === c.key;
+      return {
+        key: c.key, label: c.label, dot: TASK_STATUS[c.key].dot, count: String(list.length), cards: list.map(card),
+        hint: c.hint || '', hasHint: !!c.hint && list.length === 0, empty: list.length === 0, emptyTxt: c.emptyTxt,
+        bg: over ? '#e4ddcc' : '#ebe5d8', outline: over ? '#8a867c' : 'transparent',
+        onDragOver: (e) => { if (this._dragId == null) return; e.preventDefault(); if (this.st().dragOver !== c.key) this.setState({ dragOver: c.key }); },
+        onDrop: (e) => { e.preventDefault(); const id = this._dragId; this._dragId = null; if (id != null) this.dropTask(id, c.key); },
+      };
+    });
+    const all = b.tasks;
+    const overdue = all.filter((t) => t.status !== 'done' && t.status !== 'cancelled' && dueInfo(t.due_at).overdue).length;
+    const reqs = all.reduce((n, t) => n + (t.pending_requests || []).length, 0);
+    const parts = exec
+      ? [[all.filter((t) => t.status === 'open').length, 'unassigned'], [all.filter((t) => t.status === 'queued').length, 'queued'], [overdue, 'overdue'], [reqs, reqs === 1 ? 'request to review' : 'requests to review']]
+      : [[all.filter((t) => t.status === 'assigned').length, 'new for you'], [all.filter((t) => t.status === 'accepted').length, 'in progress'], [overdue, 'overdue']];
+    const summary = parts.filter((p) => p[0] > 0).map((p) => `${p[0]} ${p[1]}`).join(' · ');
+    const prChip = (id, label, dot) => {
+      const on = f.pr === id;
+      return { label, dot: dot || '', hasDot: !!dot, pressed: on ? 'true' : 'false', bg: on ? '#2b2a26' : '#f7f4ec', fg: on ? '#ffffff' : '#3d3b36', border: on ? '#2b2a26' : '#e2dccd', click: () => setF({ pr: id }) };
+    };
+    const team = b.analysts.slice().sort((x, y) => y.trustScore - x.trustScore).map((a) => {
+      const ts = TIER_STYLE[a.tier] || TIER_STYLE.Junior;
+      return { name: a.name, ini: initials(a.name), avBg: avatarBg(a.id), tier: a.tier, tierBg: ts.bg, tierFg: ts.fg, bar: ts.bar, score: String(a.trustScore), pct: `${a.trustScore}%`,
+        load: `${a.openTasks} of ${a.maxOpenTasks} open · ${a.available ? 'free' : 'full'}`, freeC: a.available ? '#15803d' : '#b91c1c', profile: a.profileSummary || '', hasProfile: !!a.profileSummary };
+    });
+    const offline = !ME.signedIn;
+    return {
+      exec, offline, ready: !offline && b.loaded,
+      offlineTxt: 'This page was opened as a file, so there’s no one signed in. Run npm start and open http://localhost:3000 to use the board.',
+      sub: ME.appRole === 'member' ? 'You don’t have a role yet. Ask an admin to make you an analyst or exec.'
+        : exec ? (summary || 'Everything your analysts are working on. Drag a card to To do to assign it.') : (summary || 'Your tasks. Drag a card along as you work on it.'),
+      refresh: () => this.loadBoard().then(() => this.showToast('Board is up to date')),
+      newTask: () => this.setState({ modal: { type: 'newTask' }, nt: { title: '', desc: '', priority: 'Medium', category: 'general', error: '' } }),
+      notices: b.notices.slice(0, 4).map((n) => ({ msg: n.message, when: ago(n.created_at), hasTask: !!n.task_id, open: () => this.openTask(n.task_id),
+        dismiss: () => api('POST', `/api/notices/${n.id}/read`).then(() => this.loadBoard()).catch((e) => this.showToast(e.message)) })),
+      hasNotices: exec && b.notices.length > 0,
+      f: {
+        q: f.q, onQ: (e) => setF({ q: e.target.value }), who: f.who, onWho: (e) => setF({ who: e.target.value }),
+        prs: [prChip('all', 'All'), prChip('High', 'High', PRIORITY.High.edge), prChip('Medium', 'Medium', PRIORITY.Medium.edge), prChip('Low', 'Low', PRIORITY.Low.edge)],
+        whoOpts: [{ id: '', name: 'Everyone' }, { id: 'none', name: 'Unassigned' }].concat(b.analysts.map((a) => ({ id: String(a.id), name: a.name }))),
+        toggleOverdue: () => setF({ overdue: !f.overdue }), overduePressed: f.overdue ? 'true' : 'false',
+        overdueBg: f.overdue ? '#b91c1c' : '#f7f4ec', overdueFg: f.overdue ? '#ffffff' : '#3d3b36', overdueBorder: f.overdue ? '#b91c1c' : '#e2dccd',
+      },
+      cols, colCount: String(cols.length), minWidth: `${cols.length * 234}px`,       team, noTeam: team.length === 0,
+    };
+  }
+
+  vmTask() {
+    const s = this.st(), m = s.modal, d = s.detail;
+    if (!m || m.type !== 'task') return { tk: { events: [], details: [], actions: [], requests: [] }, tf: { show: false } };
+    if (!d) return { tk: { key: `VD-${m.id}`, title: '', loading: true, ready: false, events: [], details: [], actions: [], requests: [] }, tf: { show: false } };
+    const t = d.task, exec = isExecRole(), mine = t.assignee_id === ME.id;
+    const pr = PRIORITY[t.priority], st = TASK_STATUS[t.status], open = t.status === 'assigned' || t.status === 'accepted';
+    const names = {};
+    s.board.analysts.forEach((a) => { names[a.id] = a.name; });
+    names[ME.id] = ME.name;
+    const nameOf = (id) => (id == null ? 'Verdict' : names[id] || (s.board.tasks.find((x) => x.assignee_id === id) || {}).assignee_name || 'Someone');
+    const fail = (e) => this.setState({ tf: Object.assign({}, this.st().tf, { error: e.message }) });
+    const act = (path, body, msg) => this.taskAct(`/api/tasks/${t.id}/${path}`, body, msg);
+    const form = (kind) => () => this.setState({ tf: { kind, text: '', category: 'outside_expertise', date: toLocalInput(new Date(Math.max(Date.now(), new Date(t.due_at || 0).getTime()) + 2 * 864e5)), error: '' } });
+    const btn = (label, click, kind) => ({
+      label, click, cls: kind === 'primary' ? 'btn-p' : 'btn-s',
+      bg: kind === 'primary' ? '#2b2a26' : '#f7f4ec', fg: kind === 'primary' ? '#ffffff' : kind === 'danger' ? '#b91c1c' : '#1f1e1d', border: kind === 'primary' ? '#2b2a26' : '#d9d2c1',
+    });
+    const actions = [];
+    if (mine && t.status === 'assigned') actions.push(btn('Accept', () => act('accept', null, 'Accepted. It’s in progress.').catch((e) => this.showToast(e.message)), 'primary'));
+    if (mine && open) {
+      if (t.status === 'accepted') actions.push(btn('Mark done', () => act('complete', null, 'Marked done. Nice work.').catch((e) => this.showToast(e.message)), 'primary'));
+      actions.push(btn('Ask a question', form('clarify')), btn('Request more time', form('extension')), btn('Escalate', form('escalate')), btn('Decline', form('decline'), 'danger'));
+    }
+    if (exec && t.status !== 'done' && t.status !== 'cancelled') actions.push(btn(t.assignee_id ? 'Reassign' : 'Assign', () => this.openAssign(t.id), t.assignee_id ? '' : 'primary'));
+    if (exec && t.status === 'done') actions.push(btn('Reopen', form('reopen'), 'danger'));
+
+    const FORMS = {
+      clarify: { title: 'Ask the exec a question', placeholder: 'What do you need to know?', submitLabel: 'Send question', help: 'The deadline keeps running while you wait for an answer.',
+        go: (f) => act('clarify', { message: f.text }, 'Question sent') },
+      extension: { title: 'Request more time', placeholder: 'Why do you need more time?', submitLabel: 'Send request', help: 'Free if you ask before the deadline. Asking after it’s passed costs 1 trust point.',
+        go: (f) => act('extension', { reason: f.text, proposedDueAt: f.date ? new Date(f.date).toISOString() : null }, 'Request sent to the exec') },
+      escalate: { title: 'Escalate this task', placeholder: 'Why is this harder than its priority suggests?', submitLabel: 'Escalate', help: 'Raises the priority one level and tells the exec. No cost to you.',
+        go: (f) => act('escalate', { reason: f.text }, 'Escalated') },
+      decline: { title: 'Decline this task', placeholder: 'Explain your reason in a sentence or two.', submitLabel: 'Send decline', help: 'An exec reviews it. A valid reason costs nothing, and the task moves on to the next analyst. A rejected one costs 2 trust points and the task stays with you.',
+        go: (f) => act('decline', { category: f.category, reason: f.text }, 'Decline sent for review') },
+      reopen: { title: 'Reopen this task', placeholder: 'What still needs doing? (optional)', submitLabel: 'Reopen', help: 'Sends it back to the same analyst and costs them trust (half as much if it was assigned below their tier).',
+        go: (f) => act('reopen', { reason: f.text }, 'Reopened') },
+    };
+    const tf = s.tf, fd = tf && FORMS[tf.kind];
+    const tfv = !fd ? { show: false } : {
+      show: true, title: fd.title, help: fd.help, hasHelp: !!fd.help, placeholder: fd.placeholder, submitLabel: fd.submitLabel,
+      isDecline: tf.kind === 'decline', isExt: tf.kind === 'extension', text: tf.text, category: tf.category, date: tf.date, error: tf.error, hasError: !!tf.error,
+      onText: (e) => this.setState({ tf: Object.assign({}, this.st().tf, { text: e.target.value, error: '' }) }),
+      onCat: (e) => this.setState({ tf: Object.assign({}, this.st().tf, { category: e.target.value }) }),
+      onDate: (e) => this.setState({ tf: Object.assign({}, this.st().tf, { date: e.target.value }) }),
+      cancel: () => this.setState({ tf: null }),
+      submit: (e) => { if (e && e.preventDefault) e.preventDefault(); fd.go(this.st().tf).then(() => this.setState({ tf: null })).catch(fail); },
+    };
+
+    const review = (r, approve) => () => api('POST', `/api/requests/${r.id}/review`, { approve })
+      .then(() => { this.showToast(approve ? 'Request approved' : 'Request rejected'); this.loadBoard(); this.loadTask(t.id); })
+      .catch((e) => this.showToast(e.message));
+    const requests = d.requests.filter((r) => r.status === 'pending').map((r) => ({
+      head: r.kind === 'decline' ? `${nameOf(r.analyst_id)} wants to decline (${({ outside_expertise: 'outside their expertise', at_capacity: 'at capacity', conflict_of_interest: 'conflict of interest', missing_information: 'missing information', other: 'other' })[r.reason_category] || 'other'}):` : `${nameOf(r.analyst_id)} asked for more time:`,
+      reason: r.reason, extra: r.proposed_due_at ? `New due date: ${shortDate(r.proposed_due_at)}${t.due_at ? ` (now ${shortDate(t.due_at)})` : ''}` : '', hasExtra: !!r.proposed_due_at,
+      canReview: exec, waiting: !exec, approve: review(r, true), reject: review(r, false),
+      approveLabel: r.kind === 'decline' ? 'Accept reason' : 'Approve', rejectLabel: r.kind === 'decline' ? 'Not valid' : 'Turn down',
+    }));
+    const events = d.events.slice().reverse().map((e) => {
+      const who = e.actor_id == null ? 'Verdict' : e.actor_name || nameOf(e.actor_id);
+      const delta = e.score_delta == null ? 0 : Number(e.score_delta);
+      return {
+        who, ini: e.actor_id == null ? 'V' : initials(who), when: ago(e.created_at),
+        what: e.type === 'assigned' && e.analyst_id ? `assigned it to ${nameOf(e.analyst_id)}` : TASK_EVENTS[e.type] || e.type.replace(/_/g, ' '),
+        note: e.note || '', hasNote: !!e.note, hasDelta: delta !== 0, delta: `${delta > 0 ? '+' : ''}${delta}`,
+        deltaBg: delta > 0 ? '#e3f1e6' : '#fdecec', deltaFg: delta > 0 ? '#166534' : '#b91c1c',
+      };
+    });
+    const due = dueInfo(t.due_at, t.status === 'done');
+    const details = [
+      { label: 'Assignee', value: t.assignee_id ? nameOf(t.assignee_id) : 'Unassigned', color: t.assignee_id ? '#1f1e1d' : '#8a867c', sub: t.assigned_by ? (t.assigned_by === 'auto' ? 'Assigned automatically' : 'Assigned by an exec') : '' },
+      { label: 'Due', value: t.due_at ? shortDate(t.due_at) : 'Not set', color: due.color, sub: t.status === 'done' ? (t.closed_on_time ? 'Finished on time' : 'Finished late') : (t.due_at ? `${due.txt}${t.due_reason ? `. ${t.due_reason}` : ''}` : '') },
+      { label: 'Priority', value: t.priority, color: pr.fg, sub: '' },
+      { label: 'Created', value: shortDate(t.created_at), color: '#1f1e1d', sub: '' },
+    ];
+    if (t.closed_at) details.push({ label: 'Closed', value: shortDate(t.closed_at), color: '#1f1e1d', sub: '' });
+    details.forEach((x) => { x.hasSub = !!x.sub; });
+    return {
+      tk: {
+        key: `VD-${t.id}`, title: t.title, loading: false, ready: true, priority: t.priority, prBg: pr.bg, prFg: pr.fg, status: st.label, stDot: st.dot,
+        cat: TASK_CATS[t.category] || cap(t.category), override: t.tier_override, desc: t.description || 'No details were added.', descC: t.description ? '#2b2a26' : '#8a867c',
+        actions: tf ? [] : actions, hasActions: !tf && actions.length > 0, requests, events, details,
+      },
+      tf: tfv,
+    };
+  }
+
+  vmAssign() {
+    const s = this.st(), a = s.asg;
+    if (!a || !a.data) return { loading: true, ready: false, groups: [] };
+    const { task } = a.data;
+    const recIds = a.data.recommended.map((r) => r.id);
+    const row = (r) => {
+      const ts = TIER_STYLE[r.tier] || TIER_STYLE.Junior, on = a.pick === r.id;
+      const flags = [];
+      if (!r.available) flags.push({ txt: 'Full', bg: '#fdecec', fg: '#b91c1c' });
+      if (!r.eligible) flags.push({ txt: 'Below tier', bg: '#fdf3dc', fg: '#9a5b05' });
+      if (r.declined) flags.push({ txt: 'Declined this', bg: '#e9e4d8', fg: '#5e5c56' });
+      return {
+        name: r.name, ini: initials(r.name), avBg: avatarBg(r.id), tier: r.tier, tierBg: ts.bg, tierFg: ts.fg, score: String(r.trustScore), flags,
+        stats: `${r.openTasks} of ${r.maxOpenTasks} open · ${Math.round(r.categoryRate * 100)}% on time with ${(TASK_CATS[task.category] || task.category).toLowerCase()} work`,
+        profile: r.profileSummary || '', hasProfile: !!r.profileSummary,
+        checked: on ? 'true' : 'false', border: on ? '2px solid #2b2a26' : '1px solid #e2dccd', bg: on ? '#f2eee5' : '#f7f4ec', opacity: r.available && r.eligible ? '1' : '0.82',
+        ring: on ? '#2b2a26' : '#c9c1ae', dotBg: on ? '#2b2a26' : 'transparent',
+        pick: () => this.setState({ asg: Object.assign({}, this.st().asg, { pick: r.id, confirm: false, error: '' }) }),
+      };
+    };
+    const rec = a.data.analysts.filter((r) => recIds.indexOf(r.id) >= 0).map(row);
+    const rest = a.data.analysts.filter((r) => recIds.indexOf(r.id) < 0).map(row);
+    const groups = [];
+    if (rec.length) groups.push({ label: 'Recommended', ai: true, rows: rec });
+    if (rest.length) groups.push({ label: rec.length ? 'Everyone else' : 'No one is free in the right tier. Everyone:', ai: false, rows: rest });
+    const picked = a.data.analysts.find((r) => r.id === a.pick);
+    const days = { High: 1, Medium: 3, Low: 7 }[task.priority];
+    return {
+      loading: false, ready: true, key: `VD-${task.id}`, title: task.title, priority: task.priority, groups, noAnalysts: a.data.analysts.length === 0,
+      warning: picked && picked.warning ? picked.warning : '', hasWarning: !!(picked && picked.warning), confirm: a.confirm,
+      toggleConfirm: () => this.setState({ asg: Object.assign({}, this.st().asg, { confirm: !this.st().asg.confirm, error: '' }) }),
+      due: a.due, onDue: (e) => this.setState({ asg: Object.assign({}, this.st().asg, { due: e.target.value }) }),
+      dueHint: `Suggested: ${days} day${days > 1 ? 's' : ''} for ${task.priority} priority. Pick any date you like.`,
+      error: a.error, hasError: !!a.error, submitLabel: picked ? `Assign to ${picked.name.split(' ')[0]}` : 'Assign',
+      submit: (e) => this.submitAssign(e),
+    };
+  }
+
+  vmNewTask() {
+    const n = this.st().nt || { title: '', desc: '', priority: 'Medium', category: 'general', error: '' };
+    const setN = (k) => (e) => this.setState({ nt: Object.assign({}, this.st().nt, { [k]: e.target.value, error: '' }) });
+    return {
+      title: n.title, desc: n.desc, priority: n.priority, category: n.category, error: n.error, hasError: !!n.error,
+      cats: Object.keys(TASK_CATS).map((id) => ({ id, name: TASK_CATS[id] })),
+      onTitle: setN('title'), onDesc: setN('desc'), onPriority: setN('priority'), onCategory: setN('category'),
+      submit: (e) => this.submitNewTask(e),
+    };
+  }
+
   vmModal(M) {
     const s = this.st(), m = s.modal;
     const base = { open: !!m, isReview: false, isAdd: false, isUsers: false, isCompare: false, width: '640px', close: () => this.setState({ modal: null }), note: s.note, onNote: (e) => this.setState({ note: e.target.value }) };
@@ -2374,13 +2980,12 @@ class Component extends DCLogic {
       onName: setF('name'), onDept: setF('dept'), onOwner: setF('owner'), onStage: setF('stage'), onValue: setF('value'), onRun: setF('run'), onBuild: setF('build'), onDesc: setF('desc'),
       submit: (e) => this.addProject(e) };
     // users
+    const isAdmin = ME.appRole === 'admin';
     const users = {
-      list: s.team.map((u, i) => ({ name: u.name, title: u.title, role: u.role, ini: initials(u.name), isYou: i === 0, notYou: i !== 0,
-        onRole: (e) => { const team = this.st().team.map((x, j) => (j === i ? Object.assign({}, x, { role: e.target.value }) : x)); this.setState({ team }); },
-        remove: () => this.setState({ team: this.st().team.filter((_, j) => j !== i) }) })),
-      invite: s.invite, onInvite: (e) => this.setState({ invite: e.target.value }),
-      submitInvite: (e) => { if (e && e.preventDefault) e.preventDefault(); const v = this.st().invite.trim(); if (!v) return; this.setState({ team: this.st().team.concat([{ name: v, title: 'Invited · pending', role: 'Viewer' }]), invite: '' }); this.showToast(`Invite sent to ${v}`); },
-      save: () => { this.setState({ modal: null }); this.showToast('Access updated'); },
+      isAdmin, notAdmin: !isAdmin, loading: isAdmin && !s.people,
+      list: (s.people || []).map((u) => ({ name: u.name, title: u.email, role: u.role, ini: initials(u.name), isYou: u.id === ME.id, notYou: u.id !== ME.id,
+        onRole: (e) => this.setPersonRole(u, e.target.value) })),
+      save: () => this.setState({ modal: null }),
     };
     // compare
     const A = M.byId[s.toolId] || M.tools[0], B = M.byId[s.cmpId] || M.tools.find((x) => x !== A) || A;
@@ -2403,8 +3008,9 @@ class Component extends DCLogic {
     })();
     return Object.assign(base, {
       isReview: !!m && m.type === 'review', isAdd: !!m && m.type === 'add', isUsers: !!m && m.type === 'users', isCompare: !!m && m.type === 'compare',
-      width: m && m.type === 'compare' ? '720px' : '640px', rv, add, users, cmp,
-    });
+      isTask: !!m && m.type === 'task', isAssign: !!m && m.type === 'assign', isNewTask: !!m && m.type === 'newTask',
+      width: m && m.type === 'task' ? '860px' : m && (m.type === 'compare' || m.type === 'assign') ? '720px' : '640px', rv, add, users, cmp,
+    }, this.vmTask(), { as: this.vmAssign(), nt: this.vmNewTask() });
   }
 
   vmSearch(M) {
@@ -2438,6 +3044,8 @@ class Component extends DCLogic {
       setExec: () => this.setState({ prefs: Object.assign({}, p, { depth: 'exec' }), analyst: false }),
       setAnalyst: () => this.setState({ prefs: Object.assign({}, p, { depth: 'analyst' }), analyst: true }),
       sources: SOURCES, reset: () => this.reset(),
+      roleLabel: ROLE_LABELS[ME.appRole] || 'No access yet', isAdmin: ME.appRole === 'admin', users: () => this.openUsers(),
+      roleSub: { admin: 'Assigns work and manages who has access', exec: 'Assigns work to analysts', analyst: 'Works on the tasks assigned to you' }[ME.appRole] || 'An admin needs to give you a role before you can use Assignments',
     };
   }
 
@@ -2453,7 +3061,11 @@ class Component extends DCLogic {
       return { label, icon: ICONS[icon], current: on ? 'page' : 'false', bg: on ? '#dcd5c4' : 'transparent', fg: on ? '#1f1e1d' : '#5e5c56', iconColor: on ? '#1f1e1d' : '#8a867c', weight: on ? '600' : '400', cls: on ? 'nv-on' : 'nv',
         hasBadge: !!badge, badge: String(badge || ''), click: () => this.nav(id, id === 'projects' ? { f: { dept: '', status: '', owner: '', stage: '' } } : undefined) };
     };
-    const navMain = [item('home', 'Home', 'home'), item('projects', 'Projects', 'grid'), item('departments', 'Departments', 'building'), item('attention', 'Needs attention', 'alert', attnCount)];
+    const bt = s.board.tasks;
+    const boardCount = isExecRole()
+      ? bt.filter((t) => t.status === 'open' || t.status === 'queued').length + bt.reduce((n, t) => n + (t.pending_requests || []).length, 0)
+      : bt.filter((t) => t.status === 'assigned').length;
+    const navMain = [item('home', 'Home', 'home'), item('projects', 'Projects', 'grid'), item('departments', 'Departments', 'building'), item('attention', 'Needs attention', 'alert', attnCount), item('board', 'Assignments', 'columns', boardCount)];
     const navSub = [item('ask', 'Ask Verdict', 'sparkle'), item('settings', 'Settings', 'settings')];
     const notifs = NOTIFS.map((n) => ({ title: n.title, body: n.body, when: n.when, dot: n.dot, unread: !s.notifRead, bg: s.notifRead ? '#f7f4ec' : '#f2eee5',
       open: () => { this.setState({ notifOpen: false, notifRead: true }); if (n.tool) this.openTool(n.tool); else if (n.approval) this.openReview(n.approval); } }));
@@ -2480,7 +3092,7 @@ class Component extends DCLogic {
         signedIn: ME.signedIn, logout: () => fetch('/api/logout', { method: 'POST' }).finally(() => { window.location.href = '/login'; }),
       },
       mob: { open: !!s.navOpen, toggle: () => this.setState({ navOpen: !s.navOpen }), close: () => this.setState({ navOpen: false }) },
-      home: this.vmHome(M), pj, pd, dp: this.vmDepts(M), at: this.vmAttention(M), ask: this.vmAsk(M), panel: this.vmPanel(M), modal: this.vmModal(M), st: this.vmSettings(),
+      home: this.vmHome(M), pj, pd, dp: this.vmDepts(M), at: this.vmAttention(M), bd: this.vmBoard(), ask: this.vmAsk(M), panel: this.vmPanel(M), modal: this.vmModal(M), st: this.vmSettings(),
       copilot: {
         src: COPILOT_WEBCHAT_URL, page: sc.ask && !!COPILOT_WEBCHAT_URL, demoPage: sc.ask && !COPILOT_WEBCHAT_URL,
         mounted: !!s.copilotMounted && s.screen !== 'ask', display: s.panelOpen ? 'flex' : 'none',
@@ -2506,7 +3118,7 @@ class Component extends DCLogic {
 // Each update re-renders the markup and patches it into the live page, so typing, focus and scroll survive.
 
 const VOID_TAGS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr']);
-const EVENT_NAMES = { onClick: 'click', onSubmit: 'submit', onFocus: 'focusin', onKeyDown: 'keydown', onChange: 'change', onInput: 'input' };
+const EVENT_NAMES = { onClick: 'click', onSubmit: 'submit', onFocus: 'focusin', onKeyDown: 'keydown', onChange: 'change', onInput: 'input', onDragStart: 'dragstart', onDragEnd: 'dragend', onDragOver: 'dragover', onDrop: 'drop' };
 const HOLE_RE = /\{\{\s*([^}]+?)\s*\}\}/g;
 
 function parseTemplate(src) {
@@ -2684,7 +3296,7 @@ function morphNode(f, t) {
 
 // ---- event delegation: one listener per event type, routed to the handler named on the element ----
 function installEvents() {
-  ['click', 'input', 'change', 'submit', 'focusin', 'keydown'].forEach((type) => {
+  ['click', 'input', 'change', 'submit', 'focusin', 'keydown', 'dragstart', 'dragend', 'dragover', 'drop'].forEach((type) => {
     document.addEventListener(type, (e) => {
       let el = e.target;
       while (el && el !== document) {
@@ -2703,7 +3315,7 @@ function installEvents() {
 
 // ---- boot: mount the app full-screen and keep the address bar in step (back/forward and deep links work) ----
 function boot() {
-  const SCREEN_TITLES = { home: 'Home', projects: 'Projects', departments: 'Departments', attention: 'Needs attention', ask: 'Ask Verdict', settings: 'Settings' };
+  const SCREEN_TITLES = { home: 'Home', projects: 'Projects', departments: 'Departments', attention: 'Needs attention', board: 'Assignments', ask: 'Ask Verdict', settings: 'Settings' };
   const routeFromHash = () => {
     const m = /^#\/([a-z]+)(?:\/([\w-]+))?/.exec(window.location.hash || '');
     if (!m) return null;
@@ -2747,6 +3359,9 @@ function boot() {
   requestRender = () => { if (!queued) { queued = true; Promise.resolve().then(paint); } };
   installEvents();
   paint();
+  // The board count in the sidebar needs the tasks, and the board itself refreshes every 30 seconds while it's open.
+  app.loadBoard();
+  setInterval(() => { if (app.state.screen === 'board' && !app.state.modal && !document.hidden) app.loadBoard(); }, 30 * 1000);
   window.verdictApp = app; // handy for poking at the prototype from the browser console
 }
 // Who is signed in. Served by server.js; opening this file directly falls back to the demo user.
@@ -2755,7 +3370,7 @@ const loadMe = () => {
   if (window.location.protocol === 'file:') return Promise.resolve();
   return fetch('/api/me', { credentials: 'same-origin' }).then((res) => {
     if (res.status === 401) { window.location.href = '/login'; return new Promise(() => {}); }
-    return res.ok ? res.json().then((d) => { ME = { name: d.user.name, role: d.user.email, signedIn: true }; }) : null;
+    return res.ok ? res.json().then((d) => { ME = { id: d.user.id, name: d.user.name, role: d.user.email, appRole: d.user.role, signedIn: true }; }) : null;
   }).catch(() => {});
 };
 const start = () => loadMe().then(boot);
