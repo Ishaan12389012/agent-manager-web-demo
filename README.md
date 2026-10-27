@@ -37,7 +37,9 @@ Free Render sites go to sleep after about 15 minutes with no visitors, and the f
 | `index.html` | The Verdict app (only shown to logged-in people) |
 | `public/login.html`, `public/signup.html` | Log in and sign up pages |
 | `server.js` | Web server: pages plus `/api/signup`, `/api/login`, `/api/logout`, `/api/me` |
-| `db/schema.sql` | The `users` and `session` tables |
+| `db/schema.sql` | The `users` and `session` tables, plus analysts, tasks, task events, requests and notices |
+| `lib/assign.js` | Analyst ranking, tiers and trust score rules (pure functions, tested in `lib/assign.test.js`, run with `npm test`) |
+| `lib/tasks.js` | Task assignment against the database, used by the `/api/tasks`, `/api/requests`, `/api/analysts`, `/api/notices` and `/api/users/:id/role` routes |
 | `db/setup.js` | Runs the schema against `DATABASE_URL` |
 | `render.yaml` | How Render builds and runs the site |
 

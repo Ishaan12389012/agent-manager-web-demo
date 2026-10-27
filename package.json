@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "db:setup": "node db/setup.js"
+    "db:setup": "node db/setup.js",
+    "test": "node --test"
   },
   "repository": {
     "type": "git",

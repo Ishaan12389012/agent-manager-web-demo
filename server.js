@@ -5,6 +5,7 @@ const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
 const bcrypt = require('bcryptjs');
 const { pool } = require('./db/pool');
+const tasks = require('./lib/tasks');
 
 const PORT = process.env.PORT || 3000;
 const isProd = process.env.NODE_ENV === 'production';
@@ -34,7 +35,7 @@ app.use(session({
 }));
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const publicUser = (u) => ({ id: u.id, name: u.name, email: u.email });
+const publicUser = (u) => ({ id: u.id, name: u.name, email: u.email, role: u.role });
 
 // Swap the session id on login so an old cookie can't be reused.
 const startSession = (req, userId) => new Promise((resolve, reject) => {
@@ -61,7 +62,7 @@ app.post('/api/signup', async (req, res, next) => {
     let user;
     try {
       const { rows } = await pool.query(
-        'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email',
+        'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, role',
         [name, email, hash],
       );
       user = rows[0];
@@ -79,7 +80,7 @@ app.post('/api/login', async (req, res, next) => {
   try {
     const email = String(req.body.email || '').trim().toLowerCase();
     const password = String(req.body.password || '');
-    const { rows } = await pool.query('SELECT id, name, email, password_hash FROM users WHERE lower(email) = $1', [email]);
+    const { rows } = await pool.query('SELECT id, name, email, role, password_hash FROM users WHERE lower(email) = $1', [email]);
     const user = rows[0];
     const ok = user && (await bcrypt.compare(password, user.password_hash));
     if (!ok) return res.status(401).json({ error: 'That email and password don’t match.' });
@@ -100,11 +101,58 @@ app.post('/api/logout', (req, res, next) => {
 app.get('/api/me', async (req, res, next) => {
   try {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in.' });
-    const { rows } = await pool.query('SELECT id, name, email FROM users WHERE id = $1', [req.session.userId]);
+    const { rows } = await pool.query('SELECT id, name, email, role FROM users WHERE id = $1', [req.session.userId]);
     if (!rows[0]) return res.status(401).json({ error: 'Not logged in.' });
     res.json({ user: publicUser(rows[0]) });
   } catch (err) { next(err); }
 });
+
+// ---- Tasks and analyst assignment ----
+// The rules are in lib/assign.js; lib/tasks.js applies them to the database.
+
+// Loads the logged-in person (with their role) onto req.user.
+const requireUser = async (req, res, next) => {
+  try {
+    if (!req.session.userId) return res.status(401).json({ error: 'Not logged in.' });
+    const { rows } = await pool.query('SELECT id, name, email, role FROM users WHERE id = $1', [req.session.userId]);
+    if (!rows[0]) return res.status(401).json({ error: 'Not logged in.' });
+    req.user = rows[0];
+    next();
+  } catch (err) { next(err); }
+};
+
+// Wraps a lib/tasks.js action as a route handler.
+const act = (fn) => async (req, res, next) => {
+  try {
+    res.json(await fn(req));
+  } catch (err) {
+    if (err instanceof tasks.HttpError) return res.status(err.status).json({ error: err.message, ...err.extra });
+    next(err);
+  }
+};
+
+app.use(['/api/tasks', '/api/requests', '/api/analysts', '/api/notices', '/api/users'], requireUser);
+
+app.get('/api/tasks', act((req) => tasks.listTasks(req.user, { status: req.query.status })));
+app.post('/api/tasks', act((req) => tasks.createTask(req.user, req.body)));
+app.get('/api/tasks/:id', act((req) => tasks.taskDetail(req.user, req.params.id)));
+app.get('/api/tasks/:id/recommendations', act((req) => tasks.recommendations(req.user, req.params.id)));
+app.post('/api/tasks/:id/assign', act((req) => tasks.assignManual(req.user, req.params.id, req.body)));
+app.post('/api/tasks/:id/accept', act((req) => tasks.accept(req.user, req.params.id)));
+app.post('/api/tasks/:id/clarify', act((req) => tasks.clarify(req.user, req.params.id, req.body)));
+app.post('/api/tasks/:id/escalate', act((req) => tasks.escalate(req.user, req.params.id, req.body)));
+app.post('/api/tasks/:id/extension', act((req) => tasks.requestExtension(req.user, req.params.id, req.body)));
+app.post('/api/tasks/:id/decline', act((req) => tasks.decline(req.user, req.params.id, req.body)));
+app.post('/api/tasks/:id/complete', act((req) => tasks.complete(req.user, req.params.id)));
+app.post('/api/tasks/:id/reopen', act((req) => tasks.reopen(req.user, req.params.id, req.body)));
+app.post('/api/requests/:id/review', act((req) => tasks.reviewRequest(req.user, req.params.id, req.body)));
+app.get('/api/analysts', act((req) => tasks.listAnalysts(req.user)));
+app.post('/api/users/:id/role', act((req) => tasks.setRole(req.user, req.params.id, req.body)));
+app.get('/api/notices', act((req) => tasks.listNotices(req.user)));
+app.post('/api/notices/:id/read', act((req) => tasks.markNoticeRead(req.user, req.params.id)));
+
+// Retries queued High tasks every minute, falling back to Mid analysts once the wait window passes.
+setInterval(() => tasks.drainQueue().catch((err) => console.error('Could not process the task queue:', err)), 60 * 1000).unref();
 
 // ---- Copilot Studio chatbot (Direct Line) ----
 // The Direct Line secret stays on the server. Logged-in people get a short-lived
