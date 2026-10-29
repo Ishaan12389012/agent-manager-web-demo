@@ -101,6 +101,17 @@ CREATE TABLE IF NOT EXISTS notices (
   id         SERIAL      PRIMARY KEY,
   task_id    INTEGER     REFERENCES tasks (id) ON DELETE CASCADE,
   message    TEXT        NOT NULL,
+  kind       TEXT,
   read_at    TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- What a notice is about: question and escalated go in the exec's requests inbox, the rest are alerts.
+ALTER TABLE notices ADD COLUMN IF NOT EXISTS kind TEXT;
+UPDATE notices SET kind = CASE
+    WHEN message LIKE '% has a question about %' THEN 'question'
+    WHEN message LIKE '% escalated “%' THEN 'escalated'
+    WHEN message LIKE '% asked for more time on %' THEN 'extension'
+    WHEN message LIKE '% wants to decline “%' THEN 'decline'
+    ELSE 'alert' END
+  WHERE kind IS NULL;
