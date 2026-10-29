@@ -795,6 +795,32 @@ sc-for,sc-if{display:contents}
 </sc-if>
 
 <sc-if value="{{ bd.ready }}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{ bd.hasInbox }}" hint-placeholder-val="{{ false }}">
+<section aria-labelledby="h-inbox" style="display:flex; flex-direction:column; gap:4px">
+<div style="display:flex; align-items:baseline; gap:10px"><h2 id="h-inbox" style="margin:0; font-size:20px; font-weight:700">Waiting on you</h2><span style="font-size:14px; color:#76736b">{{ bd.inboxCount }} from your analysts</span></div>
+<div role="list" style="display:flex; flex-direction:column">
+<sc-for list="{{ bd.inbox }}" as="ib" hint-placeholder-count="2">
+<div role="listitem" style="display:flex; align-items:flex-start; flex-wrap:wrap; gap:10px 16px; padding:14px 0; border-bottom:1px solid #e2dccd">
+<span style="padding:3px 10px; border-radius:999px; background:{{ ib.chipBg }}; color:{{ ib.chipFg }}; font-size:13px; font-weight:700; white-space:nowrap; margin-top:1px">{{ ib.label }}</span>
+<div style="flex:1 1 320px; min-width:0; display:flex; flex-direction:column; gap:3px">
+<sc-if value="{{ ib.hasWho }}" hint-placeholder-val="{{ true }}"><div style="font-size:15px"><strong>{{ ib.who }}</strong> <span style="color:#76736b">on {{ ib.task }}</span></div></sc-if>
+<div style="font-size:15px; line-height:1.5; color:#2b2a26">{{ ib.text }}</div>
+<sc-if value="{{ ib.hasExtra }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px; color:#76736b">{{ ib.extra }}</div></sc-if>
+<div style="font-size:13px; color:#8a867c">{{ ib.when }}</div>
+</div>
+<div style="display:flex; align-items:center; gap:8px">
+<sc-if value="{{ ib.canDecide }}" hint-placeholder-val="{{ true }}">
+<button class="btn-p" onClick="{{ ib.approve }}" style="min-height:40px; padding:0 14px; border:0; border-radius:10px; background:#2b2a26; color:#ffffff; font:inherit; font-size:14px; font-weight:700; cursor:pointer">{{ ib.approveLabel }}</button>
+<button class="btn-s" onClick="{{ ib.reject }}" style="min-height:40px; padding:0 14px; border:1px solid #d9d2c1; border-radius:10px; background:#f7f4ec; color:#1f1e1d; font:inherit; font-size:14px; font-weight:700; cursor:pointer">{{ ib.rejectLabel }}</button>
+</sc-if>
+<button class="lnk" onClick="{{ ib.open }}" style="min-height:40px; padding:0 8px; border:0; background:none; font:inherit; font-size:14px; font-weight:700; color:#1f1e1d; cursor:pointer">Open task</button>
+<sc-if value="{{ ib.isNote }}" hint-placeholder-val="{{ false }}"><button class="btn-s" onClick="{{ ib.done }}" style="min-height:40px; padding:0 14px; border:1px solid #d9d2c1; border-radius:10px; background:#f7f4ec; color:#1f1e1d; font:inherit; font-size:14px; font-weight:700; cursor:pointer">Mark handled</button></sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</section>
+</sc-if>
 <sc-if value="{{ bd.hasNotices }}" hint-placeholder-val="{{ false }}">
 <section aria-label="Alerts" style="display:flex; flex-direction:column; gap:8px">
 <sc-for list="{{ bd.notices }}" as="nt" hint-placeholder-count="2">
@@ -818,6 +844,7 @@ sc-for,sc-if{display:contents}
 <sc-for list="{{ bd.f.whoOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.id }}">{{ o.name }}</option></sc-for>
 </select>
 </sc-if>
+<sc-if value="{{ bd.notExec }}" hint-placeholder-val="{{ false }}"><button onClick="{{ bd.f.toggleMine }}" aria-pressed="{{ bd.f.minePressed }}" style="min-height:44px; padding:0 16px; border:1px solid {{ bd.f.mineBorder }}; border-radius:999px; background:{{ bd.f.mineBg }}; color:{{ bd.f.mineFg }}; font:inherit; font-size:15px; cursor:pointer">Only mine</button></sc-if>
 <button onClick="{{ bd.f.toggleOverdue }}" aria-pressed="{{ bd.f.overduePressed }}" style="min-height:44px; padding:0 16px; border:1px solid {{ bd.f.overdueBorder }}; border-radius:999px; background:{{ bd.f.overdueBg }}; color:{{ bd.f.overdueFg }}; font:inherit; font-size:15px; cursor:pointer">Overdue only</button>
 </div>
 
@@ -852,7 +879,7 @@ sc-for,sc-if{display:contents}
 </header>
 <sc-if value="{{ col.hasHint }}" hint-placeholder-val="{{ false }}"><p style="margin:0 4px; font-size:13px; line-height:1.45; color:#8a867c">{{ col.hint }}</p></sc-if>
 <sc-for list="{{ col.cards }}" as="c" hint-placeholder-count="2">
-<article class="lift" role="listitem" tabindex="0" draggable="{{ c.drag }}" onDragStart="{{ c.onDragStart }}" onDragEnd="{{ c.onDragEnd }}" onClick="{{ c.open }}" onKeyDown="{{ c.onKey }}" aria-label="{{ c.key }}: {{ c.title }}" style="position:relative; display:flex; flex-direction:column; gap:10px; padding:14px 14px 12px 18px; background:#f7f4ec; border:1px solid #e2dccd; border-radius:12px; overflow:hidden; cursor:{{ c.cursor }}; opacity:{{ c.opacity }}">
+<article class="lift" role="listitem" tabindex="0" draggable="{{ c.drag }}" onDragStart="{{ c.onDragStart }}" onDragEnd="{{ c.onDragEnd }}" onClick="{{ c.open }}" onKeyDown="{{ c.onKey }}" aria-label="{{ c.key }}: {{ c.title }}" style="position:relative; display:flex; flex-direction:column; gap:10px; padding:14px 14px 12px 18px; background:#f7f4ec; border:{{ c.border }}; border-radius:12px; overflow:hidden; cursor:{{ c.cursor }}; opacity:{{ c.opacity }}">
 <span style="position:absolute; left:0; top:0; bottom:0; width:4px; background:{{ c.edge }}"></span>
 <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#76736b"><span style="font-weight:700; letter-spacing:0.02em">{{ c.key }}</span><span style="flex:1"></span><span style="padding:2px 9px; border-radius:999px; background:{{ c.prBg }}; color:{{ c.prFg }}; font-weight:700">{{ c.pr }}</span></div>
 <div style="font-size:16px; font-weight:600; line-height:1.35; color:#1f1e1d">{{ c.title }}</div>
@@ -1445,6 +1472,7 @@ const TIER_STYLE = { Senior: { bg: '#e3f1e6', fg: '#166534', bar: '#15803d' }, M
 const tierOf = (score) => (score >= 70 ? 'Senior' : score >= 40 ? 'Mid' : 'Junior');
 const AVATAR_COLORS = ['#7c5c3b', '#3f6b5c', '#5b5f8f', '#8a4f5c', '#4f6f8a', '#6b6b3f'];
 const avatarBg = (id) => AVATAR_COLORS[(Number(id) || 0) % AVATAR_COLORS.length];
+const DECLINE_LABELS = { outside_expertise: 'Reason: outside their expertise', at_capacity: 'Reason: at capacity', conflict_of_interest: 'Reason: conflict of interest', missing_information: 'Reason: missing information', other: 'Reason: other' };
 const isExecRole = () => ME.appRole === 'admin' || ME.appRole === 'exec';
 const TASK_EVENTS = {
   created: 'created the task', assigned: 'assigned it', queued: 'queued it', accepted: 'accepted it', clarify: 'asked a question',
@@ -1481,7 +1509,9 @@ const dueInfo = (d, done) => {
 const toLocalInput = (d) => { const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 16); };
 
 const api = (method, url, body) => fetch(url, {
-  method, credentials: 'same-origin', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined,
+  method, credentials: 'same-origin', body: body ? JSON.stringify(body) : undefined,
+  // Tells the server who this page thinks is signed in, so a login in another tab can't act through this one.
+  headers: Object.assign(body ? { 'Content-Type': 'application/json' } : {}, ME.signedIn ? { 'X-Verdict-User': String(ME.id) } : {}),
 }).then((r) => r.json().catch(() => ({})).then((d) => {
   if (!r.ok) { const e = new Error(d.error || 'Something went wrong. Please try again.'); e.status = r.status; e.data = d; throw e; }
   return d;
@@ -1660,7 +1690,7 @@ class Component extends DCLogic {
       toast: null, period: '30', hidden: { rd: true, legal: true, other: true },
       prefs: { weekly: true, slack: false, slip: true, waiting: true, payback: true, depth: 'exec' },
       added: [],
-      board: { loaded: false, tasks: [], analysts: [], notices: [] }, bf: { q: '', pr: 'all', who: '', overdue: false }, dragOver: null,
+      board: { loaded: false, tasks: [], analysts: [], notices: [] }, bf: { q: '', pr: 'all', who: '', overdue: false, mine: false }, dragOver: null,
       detail: null, tf: null, asg: null, nt: null,
     };
   }
@@ -2748,20 +2778,27 @@ class Component extends DCLogic {
       && (!q || `vd-${t.id} ${t.title} ${TASK_CATS[t.category] || t.category} ${t.assignee_name || ''}`.toLowerCase().indexOf(q) >= 0)
       && (f.pr === 'all' || t.priority === f.pr)
       && (!f.who || (f.who === 'none' ? !t.assignee_id : String(t.assignee_id) === f.who))
-      && (!f.overdue || (t.status !== 'done' && dueInfo(t.due_at).overdue)));
+      && (!f.overdue || (t.status !== 'done' && dueInfo(t.due_at).overdue))
+      && (!f.mine || t.assignee_id === ME.id));
     const rank = (t) => PRIORITY[t.priority].rank;
+    // Analysts see the whole board, with their own tasks first and everyone else's faded.
+    const mineFirst = (x, y) => (exec ? 0 : (y.assignee_id === ME.id) - (x.assignee_id === ME.id));
     const card = (t) => {
       const pr = PRIORITY[t.priority], due = dueInfo(t.due_at, t.status === 'done');
       const canDrag = exec ? true : t.assignee_id === ME.id && (t.status === 'assigned' || t.status === 'accepted');
       const badges = (t.pending_requests || []).map((r) => (r.kind === 'decline' ? { txt: 'Decline requested', bg: '#fdecec', fg: '#b91c1c' } : { txt: 'More time requested', bg: '#fdf3dc', fg: '#9a5b05' }));
       if (t.tier_override) badges.push({ txt: 'Below tier', bg: '#fdf3dc', fg: '#9a5b05' });
       if (t.assigned_by === 'auto' && t.status !== 'done') badges.push({ txt: 'Auto-assigned', bg: '#e8eefb', fg: '#1d4ed8' });
+      const mine = t.assignee_id === ME.id;
+      if (mine) badges.unshift({ txt: 'Assigned to you', bg: '#2b2a26', fg: '#ffffff' });
+      const faded = !exec && !mine;
       return {
+        border: mine ? '2px solid #2b2a26' : '1px solid #e2dccd',
         key: `VD-${t.id}`, title: t.title, pr: t.priority, prBg: pr.bg, prFg: pr.fg, edge: pr.edge, cat: TASK_CATS[t.category] || cap(t.category), badges,
         dueTxt: t.status === 'done' ? `Done ${ago(t.closed_at)}` : t.status === 'queued' ? autoAssignIn(t.queued_at) : due.txt,
         dueC: t.status === 'queued' ? '#8a867c' : due.color, dueW: t.status === 'queued' ? '400' : due.weight,
         hasAssignee: !!t.assignee_id, noAssignee: !t.assignee_id, assignee: t.assignee_name || '', ini: t.assignee_name ? initials(t.assignee_name) : '', avBg: avatarBg(t.assignee_id),
-        drag: canDrag ? 'true' : false, cursor: canDrag ? 'grab' : 'pointer', opacity: t.status === 'done' ? '0.78' : '1',
+        drag: canDrag ? 'true' : false, cursor: canDrag ? 'grab' : 'pointer', opacity: faded ? '0.55' : t.status === 'done' ? '0.78' : '1',
         onDragStart: (e) => { this._dragId = t.id; try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(t.id)); } catch (err) { /* old browsers */ } },
         onDragEnd: () => { this._dragId = null; if (this.st().dragOver) this.setState({ dragOver: null }); },
         open: () => this.openTask(t.id),
@@ -2779,7 +2816,7 @@ class Component extends DCLogic {
       let list = tasks.filter((t) => t.status === c.key);
       list = c.key === 'done'
         ? list.sort((x, y) => new Date(y.closed_at) - new Date(x.closed_at)).slice(0, 20)
-        : list.sort((x, y) => rank(x) - rank(y) || new Date(x.due_at || 8.64e15) - new Date(y.due_at || 8.64e15));
+        : list.sort((x, y) => mineFirst(x, y) || rank(x) - rank(y) || new Date(x.due_at || 8.64e15) - new Date(y.due_at || 8.64e15));
       const over = s.dragOver === c.key;
       return {
         key: c.key, label: c.label, dot: TASK_STATUS[c.key].dot, count: String(list.length), cards: list.map(card),
@@ -2789,7 +2826,7 @@ class Component extends DCLogic {
         onDrop: (e) => { e.preventDefault(); const id = this._dragId; this._dragId = null; if (id != null) this.dropTask(id, c.key); },
       };
     });
-    const all = b.tasks;
+    const all = exec ? b.tasks : b.tasks.filter((t) => t.assignee_id === ME.id);
     const overdue = all.filter((t) => t.status !== 'done' && t.status !== 'cancelled' && dueInfo(t.due_at).overdue).length;
     const reqs = all.reduce((n, t) => n + (t.pending_requests || []).length, 0);
     const parts = exec
@@ -2805,22 +2842,43 @@ class Component extends DCLogic {
       return { name: a.name, ini: initials(a.name), avBg: avatarBg(a.id), tier: a.tier, tierBg: ts.bg, tierFg: ts.fg, bar: ts.bar, score: String(a.trustScore), pct: `${a.trustScore}%`,
         load: `${a.openTasks} of ${a.maxOpenTasks} open · ${a.available ? 'free' : 'full'}`, freeC: a.available ? '#15803d' : '#b91c1c', profile: a.profileSummary || '', hasProfile: !!a.profileSummary };
     });
+    // Requests inbox for execs: decisions analysts are waiting on, plus their questions and escalations.
+    const INBOX_KINDS = { question: 'Question', escalated: 'Escalated' };
+    const whoName = (id) => (b.analysts.find((a) => a.id === id) || {}).name || 'An analyst';
+    const review = (r, approve) => () => api('POST', `/api/requests/${r.id}/review`, { approve })
+      .then(() => { this.showToast(approve ? 'Request approved' : 'Request turned down'); this.loadBoard(); })
+      .catch((e) => this.showToast(e.message));
+    const inbox = b.tasks.reduce((out, t) => out.concat((t.pending_requests || []).map((r) => ({
+      at: r.created_at, label: r.kind === 'decline' ? 'Wants to decline' : 'More time', chipBg: r.kind === 'decline' ? '#fdecec' : '#fdf3dc', chipFg: r.kind === 'decline' ? '#b91c1c' : '#9a5b05',
+      who: whoName(r.analyst_id), task: `VD-${t.id} · ${t.title}`, text: r.reason,
+      extra: r.kind === 'extension' && r.proposed_due_at ? `Wants it due ${shortDate(r.proposed_due_at)}${t.due_at ? ` instead of ${shortDate(t.due_at)}` : ''}` : (r.kind === 'decline' ? (DECLINE_LABELS[r.reason_category] || '') : ''),
+      canDecide: true, approveLabel: r.kind === 'decline' ? 'Accept' : 'Approve', rejectLabel: r.kind === 'decline' ? 'Not valid' : 'Turn down',
+      approve: review(r, true), reject: review(r, false), open: () => this.openTask(t.id), isNote: false,
+    }))), []).concat(b.notices.filter((n) => INBOX_KINDS[n.kind]).map((n) => ({
+      at: n.created_at, label: INBOX_KINDS[n.kind], chipBg: n.kind === 'escalated' ? '#fdecec' : '#e8eefb', chipFg: n.kind === 'escalated' ? '#b91c1c' : '#1d4ed8',
+      who: '', task: '', text: n.message, extra: '', canDecide: false, isNote: true, open: () => this.openTask(n.task_id),
+      done: () => api('POST', `/api/notices/${n.id}/read`).then(() => this.loadBoard()).catch((e) => this.showToast(e.message)),
+    }))).sort((x, y) => new Date(y.at) - new Date(x.at)).map((x) => Object.assign(x, { when: ago(x.at), hasWho: !!x.who, hasExtra: !!x.extra }));
+    const alerts = b.notices.filter((n) => !n.kind || n.kind === 'alert');
     const offline = !ME.signedIn;
     return {
-      exec, offline, ready: !offline && b.loaded,
+      exec, notExec: !exec, offline, ready: !offline && b.loaded,
       offlineTxt: 'This page was opened as a file, so there’s no one signed in. Run npm start and open http://localhost:3000 to use the board.',
       sub: ME.appRole === 'member' ? 'You don’t have a role yet. Ask an admin to make you an analyst or exec.'
-        : exec ? (summary || 'Everything your analysts are working on. Drag a card to To do to assign it.') : (summary || 'Your tasks. Drag a card along as you work on it.'),
+        : exec ? (summary || 'Everything your analysts are working on. Drag a card to To do to assign it.') : (summary || 'Your tasks are outlined and listed first. Drag them along as you work on them.'),
       refresh: () => this.loadBoard().then(() => this.showToast('Board is up to date')),
       newTask: () => this.setState({ modal: { type: 'newTask' }, nt: { title: '', desc: '', priority: 'Medium', category: 'general', error: '' } }),
-      notices: b.notices.slice(0, 4).map((n) => ({ msg: n.message, when: ago(n.created_at), hasTask: !!n.task_id, open: () => this.openTask(n.task_id),
+      inbox, hasInbox: exec && inbox.length > 0, inboxCount: String(inbox.length),
+      notices: alerts.slice(0, 4).map((n) => ({ msg: n.message, when: ago(n.created_at), hasTask: !!n.task_id, open: () => this.openTask(n.task_id),
         dismiss: () => api('POST', `/api/notices/${n.id}/read`).then(() => this.loadBoard()).catch((e) => this.showToast(e.message)) })),
-      hasNotices: exec && b.notices.length > 0,
+      hasNotices: exec && alerts.length > 0,
       f: {
         q: f.q, onQ: (e) => setF({ q: e.target.value }), who: f.who, onWho: (e) => setF({ who: e.target.value }),
         prs: [prChip('all', 'All'), prChip('High', 'High', PRIORITY.High.edge), prChip('Medium', 'Medium', PRIORITY.Medium.edge), prChip('Low', 'Low', PRIORITY.Low.edge)],
         whoOpts: [{ id: '', name: 'Everyone' }, { id: 'none', name: 'Unassigned' }].concat(b.analysts.map((a) => ({ id: String(a.id), name: a.name }))),
         toggleOverdue: () => setF({ overdue: !f.overdue }), overduePressed: f.overdue ? 'true' : 'false',
+        toggleMine: () => setF({ mine: !f.mine }), minePressed: f.mine ? 'true' : 'false',
+        mineBg: f.mine ? '#2b2a26' : '#f7f4ec', mineFg: f.mine ? '#ffffff' : '#3d3b36', mineBorder: f.mine ? '#2b2a26' : '#e2dccd',
         overdueBg: f.overdue ? '#b91c1c' : '#f7f4ec', overdueFg: f.overdue ? '#ffffff' : '#3d3b36', overdueBorder: f.overdue ? '#b91c1c' : '#e2dccd',
       },
       cols, colCount: String(cols.length), minWidth: `${cols.length * 234}px`,       team, noTeam: team.length === 0,
@@ -3085,7 +3143,8 @@ class Component extends DCLogic {
     const bt = s.board.tasks;
     const boardCount = isExecRole()
       ? bt.filter((t) => t.status === 'open' || t.status === 'queued').length + bt.reduce((n, t) => n + (t.pending_requests || []).length, 0)
-      : bt.filter((t) => t.status === 'assigned').length;
+        + s.board.notices.filter((n) => n.kind === 'question' || n.kind === 'escalated').length
+      : bt.filter((t) => t.status === 'assigned' && t.assignee_id === ME.id).length;
     const navMain = [item('home', 'Home', 'home'), item('projects', 'Projects', 'grid'), item('departments', 'Departments', 'building'), item('attention', 'Needs attention', 'alert', attnCount), item('board', 'Assignments', 'columns', boardCount)];
     const navSub = [item('ask', 'Ask Verdict', 'sparkle'), { ...item('data', 'Data', 'database'), click: () => { window.location.href = '/data'; } }, item('settings', 'Settings', 'settings')];
     const notifs = NOTIFS.map((n) => ({ title: n.title, body: n.body, when: n.when, dot: n.dot, unread: !s.notifRead, bg: s.notifRead ? '#f7f4ec' : '#f2eee5',
@@ -3383,6 +3442,13 @@ function boot() {
   // The board count in the sidebar needs the tasks, and the board itself refreshes every 30 seconds while it's open.
   app.loadBoard();
   setInterval(() => { if (app.state.screen === 'board' && !app.state.modal && !document.hidden) app.loadBoard(); }, 30 * 1000);
+  // Logging in as someone else in another tab swaps the account for every tab, so reload to match.
+  window.addEventListener('focus', () => {
+    if (!ME.signedIn) return;
+    fetch('/api/me', { credentials: 'same-origin' }).then((r) => (r.ok ? r.json() : null)).then((d) => {
+      if (!d || d.user.id !== ME.id) window.location.reload();
+    }).catch(() => {});
+  });
   window.verdictApp = app; // handy for poking at the prototype from the browser console
 }
 // Who is signed in. Served by server.js; opening this file directly falls back to the demo user.

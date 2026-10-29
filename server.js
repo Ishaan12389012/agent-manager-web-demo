@@ -120,6 +120,12 @@ const requireUser = async (req, res, next) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in.' });
     const { rows } = await pool.query('SELECT id, name, email, role FROM users WHERE id = $1', [req.session.userId]);
     if (!rows[0]) return res.status(401).json({ error: 'Not logged in.' });
+    // The page says who it thinks is signed in. If another tab has since logged in as someone
+    // else, the shared cookie now belongs to that account, so stop rather than act as them.
+    const pageUser = req.get('X-Verdict-User');
+    if (pageUser && Number(pageUser) !== rows[0].id) {
+      return res.status(409).json({ error: 'You logged in as a different account in another tab. Reload this page to carry on.', accountChanged: true });
+    }
     req.user = rows[0];
     next();
   } catch (err) { next(err); }
