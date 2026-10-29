@@ -61,6 +61,9 @@ CREATE TABLE IF NOT EXISTS tasks (
   closed_on_time   BOOLEAN
 );
 
+-- Why the assignee got this task: typed by the exec, or written by auto-delegation.
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS assign_reason TEXT;
+
 CREATE INDEX IF NOT EXISTS tasks_assignee_idx ON tasks (assignee_id) WHERE status IN ('assigned', 'accepted');
 CREATE INDEX IF NOT EXISTS tasks_queue_idx ON tasks (queued_at) WHERE status = 'queued';
 
