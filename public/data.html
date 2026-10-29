@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data · Verdict</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&amp;display=swap">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #efeadf; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; color: #1f1e1d; font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 24px 64px; }
+  h1, h2 { font-family: 'Source Serif 4', Georgia, serif; font-weight: 500; letter-spacing: -0.005em; margin: 0; }
+  h1 { font-size: 34px; }
+  h2 { font-size: 22px; }
+  a { color: inherit; }
+  .back { display: inline-block; margin-bottom: 20px; color: #5e5c56; text-decoration: none; font-size: 14px; }
+  .back:hover { color: #1f1e1d; }
+  .lede { color: #5e5c56; margin: 8px 0 28px; max-width: 640px; }
+  .drop { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 20px; border: 1.5px dashed #cfc7b4; border-radius: 14px; background: #f7f4ec; margin-bottom: 32px; }
+  .drop.over { border-color: #2b2a26; }
+  .drop p { margin: 0; flex: 1; min-width: 220px; color: #5e5c56; }
+  button, .btn { height: 40px; padding: 0 16px; border: 0; border-radius: 10px; background: #2b2a26; color: #f7f4ec; font: inherit; font-weight: 600; cursor: pointer; }
+  button.ghost { background: transparent; color: #5e5c56; border: 1px solid #d9d2c1; font-weight: 500; }
+  button:disabled { opacity: .5; cursor: default; }
+  .msg { margin: -18px 0 28px; font-size: 14px; }
+  .msg.err { color: #9b3d2e; }
+  .list { display: flex; flex-direction: column; border-top: 1px solid #d9d2c1; }
+  .row { display: flex; align-items: center; gap: 16px; padding: 14px 4px; border-bottom: 1px solid #d9d2c1; cursor: pointer; background: none; border-left: 0; border-right: 0; border-top: 0; text-align: left; color: inherit; font: inherit; width: 100%; height: auto; border-radius: 0; font-weight: 400; }
+  .row:hover, .row.on { background: #e7e1d3; }
+  .row .name { flex: 1; font-weight: 600; }
+  .row .meta { color: #8a867c; font-size: 13px; }
+  .empty { padding: 40px 0; color: #8a867c; }
+  .view { margin-top: 36px; }
+  .view-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+  .view-head .meta { color: #8a867c; font-size: 13px; flex: 1; }
+  input[type=search] { height: 40px; padding: 0 12px; border: 1px solid #d9d2c1; border-radius: 10px; background: #f7f4ec; font: inherit; min-width: 220px; }
+  .table-wrap { overflow: auto; max-height: 70vh; border: 1px solid #d9d2c1; border-radius: 12px; background: #f7f4ec; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { padding: 8px 12px; border-bottom: 1px solid #e7e1d3; text-align: left; white-space: nowrap; }
+  th { position: sticky; top: 0; background: #e7e1d3; font-weight: 600; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.blank { color: #bdb5a3; }
+  .more { padding: 10px 12px; color: #8a867c; font-size: 13px; }
+  @media (max-width: 600px) { main { padding: 24px 16px 48px; } h1 { font-size: 28px; } }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="/">← Back to Verdict</a>
+  <h1>Data</h1>
+  <p class="lede">Tables imported from Excel or CSV files. Each sheet in a workbook becomes its own table. Importing a file with the same name again replaces the old copy, so you can refresh a table by re-uploading it.</p>
+
+  <div id="importer" hidden>
+    <label class="drop" id="drop">
+      <p><strong style="color:#1f1e1d">Import a spreadsheet.</strong> Drop an .xlsx or .csv file here, or choose one. The first row should hold the column titles.</p>
+      <input id="file" type="file" accept=".xlsx,.csv" hidden>
+      <span class="btn" style="display:inline-flex; align-items:center">Choose file</span>
+    </label>
+    <p class="msg" id="msg" hidden></p>
+  </div>
+
+  <h2>Imported tables</h2>
+  <div class="list" id="list" style="margin-top:12px"><div class="empty">Loading…</div></div>
+
+  <section class="view" id="view" hidden>
+    <div class="view-head">
+      <h2 id="v-name"></h2>
+      <span class="meta" id="v-meta"></span>
+      <input type="search" id="v-search" placeholder="Search this table" aria-label="Search this table">
+      <button class="ghost" id="v-delete" hidden>Remove</button>
+    </div>
+    <div class="table-wrap"><table id="v-table"></table><div class="more" id="v-more" hidden></div></div>
+  </section>
+</main>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, props, text) => { const e = document.createElement(tag); Object.assign(e, props || {}); if (text !== undefined) e.textContent = text; return e; };
+  const when = (iso) => new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const plural = (n, w) => `${n.toLocaleString()} ${w}${n === 1 ? '' : 's'}`;
+  const SHOW = 500;
+  let canImport = false, current = null;
+
+  async function api(url, opts) {
+    const res = await fetch(url, opts);
+    if (res.status === 401) { location.href = '/login'; throw new Error('Not logged in.'); }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+    return data;
+  }
+
+  function say(text, isErr) {
+    const m = $('msg');
+    m.hidden = !text; m.textContent = text || ''; m.className = 'msg' + (isErr ? ' err' : '');
+  }
+
+  async function loadList(openId) {
+    const list = $('list');
+    let data;
+    try { data = await api('/api/datasets'); } catch (e) { list.replaceChildren(el('div', { className: 'empty' }, e.message)); return; }
+    canImport = data.canImport;
+    $('importer').hidden = !canImport;
+    if (!data.datasets.length) {
+      list.replaceChildren(el('div', { className: 'empty' }, canImport ? 'No data imported yet. Import a spreadsheet above to get started.' : 'No data imported yet. An exec or admin can import spreadsheets here.'));
+      $('view').hidden = true;
+      return;
+    }
+    list.replaceChildren(...data.datasets.map((d) => {
+      const b = el('button', { className: 'row' + (current && current.id === d.id ? ' on' : '') });
+      b.append(el('span', { className: 'name' }, d.name),
+        el('span', { className: 'meta' }, `${plural(d.rowCount, 'row')} · ${plural(d.columnCount, 'column')} · ${when(d.importedAt)}`));
+      b.onclick = () => openTable(d.id);
+      return b;
+    }));
+    if (openId) openTable(openId);
+  }
+
+  async function openTable(id) {
+    let d;
+    try { d = (await api(`/api/datasets/${id}`)).dataset; } catch (e) { return say(e.message, true); }
+    current = d;
+    document.querySelectorAll('.row').forEach((r) => r.classList.toggle('on', r.querySelector('.name').textContent === d.name));
+    $('view').hidden = false;
+    $('v-name').textContent = d.name;
+    $('v-meta').textContent = `From ${d.sourceFile || 'an upload'}${d.importedBy ? ` by ${d.importedBy}` : ''}, ${when(d.importedAt)}`;
+    $('v-delete').hidden = !canImport;
+    $('v-search').value = '';
+    renderRows();
+    $('view').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderRows() {
+    const d = current, q = $('v-search').value.trim().toLowerCase();
+    const rows = q ? d.rows.filter((r) => r.some((v) => v !== null && String(v).toLowerCase().includes(q))) : d.rows;
+    const head = el('tr');
+    d.columns.forEach((c) => head.append(el('th', { scope: 'col' }, c)));
+    const body = rows.slice(0, SHOW).map((r) => {
+      const tr = el('tr');
+      d.columns.forEach((_, i) => {
+        const v = r[i];
+        tr.append(v === null || v === undefined ? el('td', { className: 'blank' }, '—')
+          : el('td', { className: typeof v === 'number' ? 'num' : '' }, typeof v === 'number' ? v.toLocaleString() : String(v)));
+      });
+      return tr;
+    });
+    $('v-table').replaceChildren(el('thead'), el('tbody'));
+    $('v-table').tHead.append(head);
+    $('v-table').tBodies[0].append(...body);
+    const more = $('v-more');
+    more.hidden = rows.length <= SHOW && !(q && !rows.length);
+    more.textContent = !rows.length ? 'No rows match your search.' : `Showing the first ${SHOW.toLocaleString()} of ${plural(rows.length, 'row')}. Search to narrow it down.`;
+  }
+
+  async function upload(file) {
+    if (!file) return;
+    say(`Importing ${file.name}…`);
+    try {
+      const data = await api(`/api/datasets?filename=${encodeURIComponent(file.name)}`, { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: file });
+      const names = data.imported.map((t) => `${t.name} (${plural(t.rowCount, 'row')})`).join(', ');
+      say(`Imported ${names}.`);
+      loadList(data.imported[0].id);
+    } catch (e) { say(e.message, true); }
+    $('file').value = '';
+  }
+
+  $('file').onchange = () => upload($('file').files[0]);
+  const drop = $('drop');
+  drop.ondragover = (e) => { e.preventDefault(); drop.classList.add('over'); };
+  drop.ondragleave = () => drop.classList.remove('over');
+  drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove('over'); upload(e.dataTransfer.files[0]); };
+  $('v-search').oninput = renderRows;
+  $('v-delete').onclick = async () => {
+    if (!current || !confirm(`Remove “${current.name}” from Verdict? The original file isn’t affected.`)) return;
+    try { await api(`/api/datasets/${current.id}`, { method: 'DELETE' }); } catch (e) { return say(e.message, true); }
+    current = null; $('view').hidden = true; say(''); loadList();
+  };
+
+  loadList();
+})();
+</script>
+</body>
+</html>

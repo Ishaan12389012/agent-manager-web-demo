@@ -101,3 +101,20 @@ CREATE TABLE IF NOT EXISTS notices (
   read_at    TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ---- Imported data ----
+
+-- One row per imported table (one Excel sheet or one CSV file).
+-- Re-importing a file with the same name replaces the old copy.
+CREATE TABLE IF NOT EXISTS datasets (
+  id          SERIAL      PRIMARY KEY,
+  name        TEXT        NOT NULL,
+  source_file TEXT        NOT NULL,
+  columns     JSONB       NOT NULL, -- column titles from the header row, in order
+  rows        JSONB       NOT NULL, -- array of arrays, one per data row
+  row_count   INTEGER     NOT NULL,
+  imported_by INTEGER     REFERENCES users (id) ON DELETE SET NULL,
+  imported_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS datasets_name_lower_idx ON datasets (lower(name));

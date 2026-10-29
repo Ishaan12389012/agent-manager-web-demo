@@ -23,7 +23,8 @@
     "dotenv": "^18.0.6",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
-    "pg": "^8.23.1"
+    "pg": "^8.23.1",
+    "read-excel-file": "^9.3.14"
   },
   "private": true,
   "engines": {
