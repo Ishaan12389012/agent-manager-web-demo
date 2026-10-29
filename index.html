@@ -1551,6 +1551,7 @@ const C_ = (cx, cy, r) => `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r}
 const RR = (x, y, w, h, r) => `M${x + r} ${y}h${w - 2 * r}a${r} ${r} 0 0 1 ${r} ${r}v${h - 2 * r}a${r} ${r} 0 0 1 ${-r} ${r}h${-(w - 2 * r)}a${r} ${r} 0 0 1 ${-r} ${-r}v${-(h - 2 * r)}a${r} ${r} 0 0 1 ${r} ${-r}z`;
 const P = (...parts) => parts.map((p) => p.trim().replace(/^m/, 'M')).join(' ');
 const ICONS = {
+  database: P('M3 5a9 3 0 1 0 18 0a9 3 0 1 0-18 0', 'M3 5v14a9 3 0 0 0 18 0V5', 'M3 12a9 3 0 0 0 18 0'),
   home: P('M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8', 'M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'),
   grid: P(RR(3, 3, 7, 7, 1.5), RR(14, 3, 7, 7, 1.5), RR(14, 14, 7, 7, 1.5), RR(3, 14, 7, 7, 1.5)),
   building: P('M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z', 'M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2', 'M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2', 'M10 6h4', 'M10 10h4', 'M10 14h4', 'M10 18h4'),
@@ -3145,7 +3146,7 @@ class Component extends DCLogic {
         + s.board.notices.filter((n) => n.kind === 'question' || n.kind === 'escalated').length
       : bt.filter((t) => t.status === 'assigned' && t.assignee_id === ME.id).length;
     const navMain = [item('home', 'Home', 'home'), item('projects', 'Projects', 'grid'), item('departments', 'Departments', 'building'), item('attention', 'Needs attention', 'alert', attnCount), item('board', 'Assignments', 'columns', boardCount)];
-    const navSub = [item('ask', 'Ask Verdict', 'sparkle'), item('settings', 'Settings', 'settings')];
+    const navSub = [item('ask', 'Ask Verdict', 'sparkle'), { ...item('data', 'Data', 'database'), click: () => { window.location.href = '/data'; } }, item('settings', 'Settings', 'settings')];
     const notifs = NOTIFS.map((n) => ({ title: n.title, body: n.body, when: n.when, dot: n.dot, unread: !s.notifRead, bg: s.notifRead ? '#f7f4ec' : '#f2eee5',
       open: () => { this.setState({ notifOpen: false, notifRead: true }); if (n.tool) this.openTool(n.tool); else if (n.approval) this.openReview(n.approval); } }));
     const search = this.vmSearch(M);
