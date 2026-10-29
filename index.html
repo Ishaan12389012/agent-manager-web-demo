@@ -1181,6 +1181,12 @@ sc-for,sc-if{display:contents}
 <div class="c1-md" style="display:grid; grid-template-columns:minmax(0, 1fr) 230px; gap:24px; align-items:start">
 <div style="display:flex; flex-direction:column; gap:18px; min-width:0">
 <p style="margin:0; font-size:16px; line-height:1.6; color:{{ modal.tk.descC }}">{{ modal.tk.desc }}</p>
+<sc-if value="{{ modal.tk.hasReason }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex; flex-direction:column; gap:4px; padding:14px 16px; border-radius:12px; background:#efeadf; border-left:3px solid #2b2a26">
+<div style="font-size:14px; font-weight:700; color:#3d3b36">{{ modal.tk.reasonHead }}</div>
+<div style="font-size:15px; line-height:1.55; color:#2b2a26">{{ modal.tk.reason }}</div>
+</div>
+</sc-if>
 
 <sc-for list="{{ modal.tk.requests }}" as="rq" hint-placeholder-count="1">
 <div style="display:flex; flex-direction:column; gap:10px; padding:14px 16px; border-radius:12px; background:#fdf3dc; color:#5c3a04">
@@ -1276,6 +1282,10 @@ sc-for,sc-if{display:contents}
 <label style="display:flex; align-items:center; gap:10px; font-size:15px; font-weight:600; cursor:pointer"><input type="checkbox" checked="{{ modal.as.confirm }}" onClick="{{ modal.as.toggleConfirm }}" style="width:18px; height:18px">Assign anyway</label>
 </div>
 </sc-if>
+<label style="display:flex; flex-direction:column; gap:6px; font-size:14px; font-weight:700; color:#3d3b36">Why them?
+<textarea rows="2" placeholder="e.g. Ana fixed the last two cost spikes on this tool" value="{{ modal.as.reason }}" onChange="{{ modal.as.onReason }}" style="padding:10px 12px; border:1px solid #d9d2c1; border-radius:12px; background:#f7f4ec; font:inherit; font-size:15px; font-weight:400; color:#1f1e1d; resize:vertical"></textarea>
+<span style="font-size:13px; font-weight:400; color:#76736b">The analyst sees this on the task.</span>
+</label>
 <label style="display:flex; flex-direction:column; gap:6px; font-size:14px; font-weight:700; color:#3d3b36">Due
 <input type="datetime-local" value="{{ modal.as.due }}" onChange="{{ modal.as.onDue }}" style="height:46px; padding:0 12px; border:1px solid #d9d2c1; border-radius:12px; background:#f7f4ec; font:inherit; font-size:15px; font-weight:400; color:#1f1e1d">
 <span style="font-size:13px; font-weight:400; color:#76736b">{{ modal.as.dueHint }}</span>
@@ -1443,6 +1453,12 @@ const TASK_EVENTS = {
 };
 
 const HOUR_MS = 36e5;
+// Queued High tasks go to someone this long after they were queued (FALLBACK_WAIT_MS in lib/assign.js).
+const AUTO_ASSIGN_MS = 30 * 6e4;
+const autoAssignIn = (queuedAt) => {
+  const m = Math.ceil((new Date(queuedAt).getTime() + AUTO_ASSIGN_MS - Date.now()) / 6e4);
+  return m > 0 ? `Auto-assigns in ${m}m` : 'Auto-assigning now';
+};
 const ago = (d) => {
   const m = Math.round((Date.now() - new Date(d).getTime()) / 6e4);
   if (m < 1) return 'just now';
@@ -1786,10 +1802,10 @@ class Component extends DCLogic {
   }
 
   openAssign(id) {
-    this.setState({ modal: { type: 'assign', id }, asg: { data: null, pick: null, due: '', confirm: false, error: '' } });
+    this.setState({ modal: { type: 'assign', id }, asg: { data: null, pick: null, due: '', reason: '', confirm: false, error: '' } });
     api('GET', `/api/tasks/${id}/recommendations`).then((data) => {
       const pick = data.recommended[0] ? data.recommended[0].id : null;
-      this.setState({ asg: { data, pick, due: toLocalInput(data.suggestedDueAt), confirm: false, error: '' } });
+      this.setState({ asg: Object.assign({}, this.st().asg, { data, pick, due: toLocalInput(data.suggestedDueAt), confirm: false, error: '' }) });
     }).catch((e) => { this.setState({ modal: null }); this.showToast(e.message); });
   }
 
@@ -1799,8 +1815,9 @@ class Component extends DCLogic {
     if (!a || !a.data) return;
     if (!a.pick) { this.setState({ asg: Object.assign({}, a, { error: 'Pick an analyst.' }) }); return; }
     const who = a.data.analysts.find((x) => x.id === a.pick);
+    if ((a.reason || '').trim().length < 5) { this.setState({ asg: Object.assign({}, a, { error: `Say why you picked ${who.name.split(' ')[0]}, so they know.` }) }); return; }
     if (who.warning && !a.confirm) { this.setState({ asg: Object.assign({}, a, { error: 'Tick “Assign anyway” to go ahead.' }) }); return; }
-    api('POST', `/api/tasks/${a.data.task.id}/assign`, { analystId: a.pick, dueAt: a.due ? new Date(a.due).toISOString() : null, confirmOverride: a.confirm })
+    api('POST', `/api/tasks/${a.data.task.id}/assign`, { analystId: a.pick, reason: a.reason.trim(), dueAt: a.due ? new Date(a.due).toISOString() : null, confirmOverride: a.confirm })
       .then(() => { this.setState({ modal: null, asg: null }); this.showToast(`Assigned to ${who.name}`); this.loadBoard(); })
       .catch((err) => this.setState({ asg: Object.assign({}, this.st().asg, { error: err.message }) }));
   }
@@ -2737,11 +2754,11 @@ class Component extends DCLogic {
       const canDrag = exec ? true : t.assignee_id === ME.id && (t.status === 'assigned' || t.status === 'accepted');
       const badges = (t.pending_requests || []).map((r) => (r.kind === 'decline' ? { txt: 'Decline requested', bg: '#fdecec', fg: '#b91c1c' } : { txt: 'More time requested', bg: '#fdf3dc', fg: '#9a5b05' }));
       if (t.tier_override) badges.push({ txt: 'Below tier', bg: '#fdf3dc', fg: '#9a5b05' });
-      if (t.status === 'queued') badges.push({ txt: `Waiting ${ago(t.queued_at).replace(' ago', '')}`, bg: '#fdecec', fg: '#b91c1c' });
       if (t.assigned_by === 'auto' && t.status !== 'done') badges.push({ txt: 'Auto-assigned', bg: '#e8eefb', fg: '#1d4ed8' });
       return {
         key: `VD-${t.id}`, title: t.title, pr: t.priority, prBg: pr.bg, prFg: pr.fg, edge: pr.edge, cat: TASK_CATS[t.category] || cap(t.category), badges,
-        dueTxt: t.status === 'done' ? `Done ${ago(t.closed_at)}` : due.txt, dueC: due.color, dueW: due.weight,
+        dueTxt: t.status === 'done' ? `Done ${ago(t.closed_at)}` : t.status === 'queued' ? autoAssignIn(t.queued_at) : due.txt,
+        dueC: t.status === 'queued' ? '#8a867c' : due.color, dueW: t.status === 'queued' ? '400' : due.weight,
         hasAssignee: !!t.assignee_id, noAssignee: !t.assignee_id, assignee: t.assignee_name || '', ini: t.assignee_name ? initials(t.assignee_name) : '', avBg: avatarBg(t.assignee_id),
         drag: canDrag ? 'true' : false, cursor: canDrag ? 'grab' : 'pointer', opacity: t.status === 'done' ? '0.78' : '1',
         onDragStart: (e) => { this._dragId = t.id; try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(t.id)); } catch (err) { /* old browsers */ } },
@@ -2752,7 +2769,7 @@ class Component extends DCLogic {
     };
     const defs = [
       { key: 'open', label: 'Unassigned', hint: 'Medium and Low tasks wait here for you to pick someone.', emptyTxt: 'Nothing waiting', execOnly: true },
-      { key: 'queued', label: 'Queued', hint: 'High priority with no Senior analyst free. Falls back to Mid after 30 minutes.', emptyTxt: 'Queue is clear', execOnly: true },
+      { key: 'queued', label: 'Queued', hint: 'High priority with no Senior analyst free. Goes to the next free analyst within 30 minutes.', emptyTxt: 'Queue is clear', execOnly: true },
       { key: 'assigned', label: 'To do', emptyTxt: exec ? 'Drop a card here to assign it' : 'Nothing new for you' },
       { key: 'accepted', label: 'In progress', emptyTxt: exec ? 'Nothing in progress' : 'Drag a task here to start it' },
       { key: 'done', label: 'Done', emptyTxt: exec ? 'Nothing finished yet' : 'Drag a task here when it’s done' },
@@ -2891,6 +2908,8 @@ class Component extends DCLogic {
         key: `VD-${t.id}`, title: t.title, loading: false, ready: true, priority: t.priority, prBg: pr.bg, prFg: pr.fg, status: st.label, stDot: st.dot,
         cat: TASK_CATS[t.category] || cap(t.category), override: t.tier_override, desc: t.description || 'No details were added.', descC: t.description ? '#2b2a26' : '#8a867c',
         actions: tf ? [] : actions, hasActions: !tf && actions.length > 0, requests, events, details,
+        hasReason: !!(t.assign_reason && t.assignee_id), reason: t.assign_reason || '',
+        reasonHead: mine ? 'Why you were picked' : `Why ${nameOf(t.assignee_id).split(' ')[0]} was picked`,
       },
       tf: tfv,
     };
@@ -2928,6 +2947,7 @@ class Component extends DCLogic {
       warning: picked && picked.warning ? picked.warning : '', hasWarning: !!(picked && picked.warning), confirm: a.confirm,
       toggleConfirm: () => this.setState({ asg: Object.assign({}, this.st().asg, { confirm: !this.st().asg.confirm, error: '' }) }),
       due: a.due, onDue: (e) => this.setState({ asg: Object.assign({}, this.st().asg, { due: e.target.value }) }),
+      reason: a.reason || '', onReason: (e) => this.setState({ asg: Object.assign({}, this.st().asg, { reason: e.target.value, error: '' }) }),
       dueHint: `Suggested: ${days} day${days > 1 ? 's' : ''} for ${task.priority} priority. Pick any date you like.`,
       error: a.error, hasError: !!a.error, submitLabel: picked ? `Assign to ${picked.name.split(' ')[0]}` : 'Assign',
       submit: (e) => this.submitAssign(e),
