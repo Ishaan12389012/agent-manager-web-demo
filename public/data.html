@@ -25,6 +25,11 @@
   button.ghost { background: transparent; color: #5e5c56; border: 1px solid #d9d2c1; font-weight: 500; }
   button:disabled { opacity: .5; cursor: default; }
   .msg { margin: -18px 0 28px; font-size: 14px; }
+  .sync { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: -12px 0 32px; font-size: 14px; color: #5e5c56; }
+  .sync .dot { width: 9px; height: 9px; border-radius: 50%; background: #16a34a; flex: none; }
+  .sync.err .dot { background: #dc2626; }
+  .sync span.txt { flex: 1; min-width: 220px; }
+  .sync button { height: 34px; padding: 0 12px; font-size: 14px; }
   .msg.err { color: #9b3d2e; }
   .list { display: flex; flex-direction: column; border-top: 1px solid #d9d2c1; }
   .row { display: flex; align-items: center; gap: 16px; padding: 14px 4px; border-bottom: 1px solid #d9d2c1; cursor: pointer; background: none; border-left: 0; border-right: 0; border-top: 0; text-align: left; color: inherit; font: inherit; width: 100%; height: auto; border-radius: 0; font-weight: 400; }
@@ -52,7 +57,7 @@
 <main>
   <a class="back" href="/">← Back to Verdict</a>
   <h1>Data</h1>
-  <p class="lede">Tables imported from Excel or CSV files. Each sheet in a workbook becomes its own table, and tables stacked on one sheet are split apart. Importing a file with the same name again replaces the old copy, so you can refresh a table by re-uploading it.</p>
+  <p class="lede">Tables imported from Excel or CSV files. Each sheet in a workbook becomes its own table, and tables stacked on one sheet are split apart. Importing a file with the same name again replaces the old copy, so you can refresh it by re-uploading.</p>
 
   <div id="importer" hidden>
     <label class="drop" id="drop">
@@ -62,6 +67,7 @@
     </label>
     <p class="msg" id="msg" hidden></p>
   </div>
+  <div class="sync" id="sync" hidden><span class="dot"></span><span class="txt" id="sync-txt"></span><button class="ghost" id="sync-now" hidden>Sync now</button></div>
 
   <h2>Imported tables</h2>
   <div class="list" id="list" style="margin-top:12px"><div class="empty">Loading…</div></div>
@@ -104,6 +110,7 @@
     try { data = await api('/api/datasets'); } catch (e) { list.replaceChildren(el('div', { className: 'empty' }, e.message)); return; }
     canImport = data.canImport;
     $('importer').hidden = !canImport;
+    showSync(data.sync);
     if (!data.datasets.length) {
       list.replaceChildren(el('div', { className: 'empty' }, canImport ? 'No data imported yet. Import a spreadsheet above to get started.' : 'No data imported yet. An exec or admin can import spreadsheets here.'));
       $('view').hidden = true;
@@ -117,6 +124,26 @@
       return b;
     }));
     if (openId) openTable(openId);
+  }
+
+  const ago = (iso) => {
+    const m = Math.round((Date.now() - new Date(iso)) / 60000);
+    return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : when(iso);
+  };
+
+  // Shows whether a OneDrive file is kept in sync, and when it was last checked.
+  function showSync(st) {
+    const box = $('sync');
+    box.hidden = !(st && st.enabled);
+    if (box.hidden) return;
+    box.classList.toggle('err', !!st.lastError);
+    const file = st.fileName || 'your OneDrive file';
+    $('sync-txt').textContent = st.lastError
+      ? `Couldn’t sync ${file}: ${st.lastError}`
+      : `Kept in sync with ${file} in OneDrive, checked every ${st.everyMinutes} minutes.`
+        + (st.lastCheckAt ? ` Last checked ${ago(st.lastCheckAt)}.` : ' Checking now…')
+        + (st.lastChangeAt ? ` Last updated ${ago(st.lastChangeAt)}.` : '');
+    $('sync-now').hidden = !canImport;
   }
 
   async function openTable(id) {
@@ -173,6 +200,13 @@
   drop.ondragleave = () => drop.classList.remove('over');
   drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove('over'); upload(e.dataTransfer.files[0]); };
   $('v-search').oninput = renderRows;
+  $('sync-now').onclick = async () => {
+    const b = $('sync-now');
+    b.disabled = true; b.textContent = 'Syncing…';
+    try { await api('/api/datasets/sync', { method: 'POST' }); say(''); } catch (e) { say(e.message, true); }
+    b.disabled = false; b.textContent = 'Sync now';
+    loadList(current && current.id);
+  };
   $('v-delete').onclick = async () => {
     if (!current || !confirm(`Remove “${current.name}” from Verdict? The original file isn’t affected.`)) return;
     try { await api(`/api/datasets/${current.id}`, { method: 'DELETE' }); } catch (e) { return say(e.message, true); }

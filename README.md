@@ -34,7 +34,17 @@ Ask Verdict shows your Copilot Studio agent. To connect it, copy **Secret 1** fr
 
 ### Importing data
 
-Open **Data** in the sidebar. Execs and admins can upload an Excel (`.xlsx`) or CSV file; each sheet becomes its own table (tables stacked on one sheet, separated by a blank row or a second header row, are split apart), stored in Postgres, and everyone with a role can view and search it. Re-uploading a file with the same name replaces the old copy. The first row of each sheet should hold the column titles. Files can be up to 10 MB and 20,000 rows per sheet.
+Open **Data** in the sidebar. Execs and admins can upload an Excel (`.xlsx`) or CSV file; each sheet becomes its own table (tables stacked on one sheet, separated by a blank row or a second header row, are split apart), stored in Postgres, and everyone with a role can view and search it. Re-uploading a file with the same name replaces the old copy, including removing tables that are no longer in it. The first row of each sheet should hold the column titles. Files can be up to 10 MB and 20,000 rows per sheet.
+
+### Keeping a spreadsheet in sync
+
+If the spreadsheet lives in OneDrive or SharePoint, Verdict can re-import it by itself when it changes. Set `EXCEL_SYNC_URL` to the file's share link (in `.env`, or the Render service's **Environment** tab). The server downloads the file every `EXCEL_SYNC_MINUTES` (default 5) and re-imports it when its contents change; tables that disappear from the file are removed. The Data page shows when it last checked, and execs and admins get a **Sync now** button.
+
+- A link shared with **Anyone with the link** works with nothing else to set.
+- For a work file that needs a sign-in, also set `MS_TENANT_ID`, `MS_CLIENT_ID` and `MS_CLIENT_SECRET` from a Microsoft Entra app registration with the Microsoft Graph **Files.Read.All** application permission (an admin grants consent).
+- Or push the file instead: a Power Automate flow (*When a file is modified* → *Get file content* → *HTTP* POST to `/api/import/push?filename=<name>.xlsx` with the header `Authorization: Bearer <IMPORT_API_KEY>` and the file content as the body).
+
+Free Render sites sleep when idle, so scheduled checks pause too; the first visit after that wakes the site and it checks the file straight away.
 
 Free Render sites go to sleep after about 15 minutes with no visitors, and the first visit after that takes up to a minute to load.
 
@@ -47,7 +57,8 @@ Free Render sites go to sleep after about 15 minutes with no visitors, and the f
 | `server.js` | Web server: pages plus `/api/signup`, `/api/login`, `/api/logout`, `/api/me` |
 | `db/schema.sql` | The `users` and `session` tables, plus analysts, tasks, task events, requests and notices |
 | `lib/assign.js` | Analyst ranking, tiers and trust score rules (pure functions, tested in `lib/assign.test.js`, run with `npm test`) |
-| `public/data.html`, `lib/importer.js` | The Data page, and the code that reads uploaded Excel and CSV files into tables (tested in `lib/importer.test.js`), used by the `/api/datasets` routes |
+| `public/data.html`, `lib/importer.js`, `lib/datasets.js` | The Data page, the code that reads Excel and CSV files into tables (tested in `lib/importer.test.js`), and saving them, used by the `/api/datasets` and `/api/import/push` routes |
+| `lib/excel-sync.js` | Keeps a OneDrive or SharePoint spreadsheet in sync (tested in `lib/excel-sync.test.js`) |
 | `lib/tasks.js` | Task assignment against the database, used by the `/api/tasks`, `/api/requests`, `/api/analysts`, `/api/notices`, `/api/users` and `/api/users/:id/role` routes |
 | `db/setup.js` | Runs the schema against `DATABASE_URL` |
 | `render.yaml` | How Render builds and runs the site |

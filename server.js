@@ -1,12 +1,14 @@
 // Verdict web server: serves the app, plus sign up / log in backed by PostgreSQL.
 const path = require('path');
+const crypto = require('crypto');
 const express = require('express');
 const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
 const bcrypt = require('bcryptjs');
 const { pool } = require('./db/pool');
 const tasks = require('./lib/tasks');
-const importer = require('./lib/importer');
+const datasets = require('./lib/datasets');
+const excelSync = require('./lib/excel-sync');
 
 const PORT = process.env.PORT || 3000;
 const isProd = process.env.NODE_ENV === 'production';
@@ -171,6 +173,29 @@ setInterval(() => tasks.drainQueue().catch((err) => console.error('Could not pro
 
 const canImport = (u) => u.role === 'admin' || u.role === 'exec';
 
+// Imports a file sent as the raw request body and answers like the Data page expects.
+const importRaw = (getUserId) => async (req, res, next) => {
+  try {
+    if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'Choose a file to import.' });
+    const filename = String(req.query.filename || '').slice(0, 200);
+    res.status(201).json(await datasets.importFile(req.body, filename, getUserId(req)));
+  } catch (err) {
+    if (err instanceof datasets.ImportError) return res.status(400).json({ error: err.message });
+    next(err);
+  }
+};
+
+// For Power Automate (or any script): send the file with "Authorization: Bearer <IMPORT_API_KEY>".
+const pushKeyOk = (req) => {
+  const key = process.env.IMPORT_API_KEY || '';
+  const given = Buffer.from(String(req.get('authorization') || '').replace(/^Bearer\s+/i, ''));
+  return key.length >= 20 && given.length === key.length && crypto.timingSafeEqual(given, Buffer.from(key));
+};
+
+app.post('/api/import/push', express.raw({ type: () => true, limit: '10mb' }), (req, res, next) => (
+  pushKeyOk(req) ? next() : res.status(401).json({ error: 'Wrong or missing import key.' })
+), importRaw(() => null));
+
 app.use('/api/datasets', requireUser, (req, res, next) => (
   req.user.role === 'member' ? res.status(403).json({ error: 'Ask an admin to give you a role first.' }) : next()
 ));
@@ -181,7 +206,7 @@ app.get('/api/datasets', async (req, res, next) => {
       SELECT d.id, d.name, d.source_file AS "sourceFile", jsonb_array_length(d.columns) AS "columnCount",
              d.row_count AS "rowCount", d.imported_at AS "importedAt", u.name AS "importedBy"
       FROM datasets d LEFT JOIN users u ON u.id = d.imported_by ORDER BY d.imported_at DESC, d.id`);
-    res.json({ datasets: rows, canImport: canImport(req.user) });
+    res.json({ datasets: rows, canImport: canImport(req.user), sync: excelSync.status });
   } catch (err) { next(err); }
 });
 
@@ -196,29 +221,18 @@ app.get('/api/datasets/:id', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-app.post('/api/datasets', express.raw({ type: () => true, limit: '10mb' }), async (req, res, next) => {
+app.post('/api/datasets', express.raw({ type: () => true, limit: '10mb' }), (req, res, next) => (
+  canImport(req.user) ? next() : res.status(403).json({ error: 'Only an exec or admin can import data.' })
+), importRaw((req) => req.user.id));
+
+// Checks the OneDrive file now instead of waiting for the next scheduled check.
+app.post('/api/datasets/sync', async (req, res, next) => {
   try {
-    if (!canImport(req.user)) return res.status(403).json({ error: 'Only an exec or admin can import data.' });
-    if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'Choose a file to import.' });
-    const filename = String(req.query.filename || '').slice(0, 200);
-    let tables;
-    try { tables = await importer.readUpload(req.body, filename); } catch (err) {
-      if (err instanceof importer.ImportError) return res.status(400).json({ error: err.message });
-      throw err;
-    }
-    const saved = [];
-    for (const t of tables) {
-      const { rows } = await pool.query(`
-        INSERT INTO datasets (name, source_file, columns, rows, row_count, imported_by)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        ON CONFLICT ((lower(name))) DO UPDATE SET name = EXCLUDED.name, source_file = EXCLUDED.source_file,
-          columns = EXCLUDED.columns, rows = EXCLUDED.rows, row_count = EXCLUDED.row_count,
-          imported_by = EXCLUDED.imported_by, imported_at = now()
-        RETURNING id, name, row_count AS "rowCount"`,
-        [t.name, filename, JSON.stringify(t.columns), JSON.stringify(t.rows), t.rows.length, req.user.id]);
-      saved.push(rows[0]);
-    }
-    res.status(201).json({ imported: saved });
+    if (!canImport(req.user)) return res.status(403).json({ error: 'Only an exec or admin can sync data.' });
+    if (!excelSync.status.enabled) return res.status(400).json({ error: 'OneDrive sync isn’t set up yet.' });
+    const st = await excelSync.syncOnce({ force: true });
+    if (st.lastError) return res.status(502).json({ error: st.lastError });
+    res.json({ sync: st });
   } catch (err) { next(err); }
 });
 
@@ -278,5 +292,7 @@ app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ error: 'Something went wrong on our side. Please try again.' });
 });
+
+excelSync.start();
 
 app.listen(PORT, () => console.log(`Verdict is running at http://localhost:${PORT}`));
