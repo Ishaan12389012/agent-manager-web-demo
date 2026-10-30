@@ -34,7 +34,7 @@ Ask Verdict shows your Copilot Studio agent. To connect it, copy **Secret 1** fr
 
 ### Importing data
 
-Open **Data** in the sidebar. Execs and admins can upload an Excel (`.xlsx`) or CSV file; each sheet becomes its own table, stored in Postgres, and everyone with a role can view and search it. Re-uploading a file with the same name replaces the old copy. The first row of each sheet should hold the column titles. Files can be up to 10 MB and 20,000 rows per sheet.
+Open **Data** in the sidebar. Execs and admins can upload an Excel (`.xlsx`) or CSV file; each sheet becomes its own table (tables stacked on one sheet, separated by a blank row or a second header row, are split apart), stored in Postgres, and everyone with a role can view and search it. Re-uploading a file with the same name replaces the old copy. The first row of each sheet should hold the column titles. Files can be up to 10 MB and 20,000 rows per sheet.
 
 Free Render sites go to sleep after about 15 minutes with no visitors, and the first visit after that takes up to a minute to load.
 
