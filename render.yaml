@@ -23,3 +23,15 @@ services:
       # Copilot Studio > Settings > Security > Web channel security > Secret 1. Paste it in Render, never in code.
       - key: COPILOT_DIRECTLINE_SECRET
         sync: false
+      # Optional OneDrive/SharePoint sync for the Data page. See README "Keeping a spreadsheet in sync".
+      - key: EXCEL_SYNC_URL
+        sync: false
+      - key: MS_TENANT_ID
+        sync: false
+      - key: MS_CLIENT_ID
+        sync: false
+      - key: MS_CLIENT_SECRET
+        sync: false
+      # Lets Power Automate send the file to /api/import/push. Render makes a long random value for you.
+      - key: IMPORT_API_KEY
+        generateValue: true
