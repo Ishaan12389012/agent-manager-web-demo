@@ -38,7 +38,9 @@
   input[type=search] { height: 40px; padding: 0 12px; border: 1px solid #d9d2c1; border-radius: 10px; background: #f7f4ec; font: inherit; min-width: 220px; }
   .table-wrap { overflow: auto; max-height: 70vh; border: 1px solid #d9d2c1; border-radius: 12px; background: #f7f4ec; }
   table { border-collapse: collapse; width: 100%; font-size: 14px; }
-  th, td { padding: 8px 12px; border-bottom: 1px solid #e7e1d3; text-align: left; white-space: nowrap; }
+  th, td { padding: 8px 12px; border-bottom: 1px solid #e7e1d3; text-align: left; vertical-align: top; }
+  th { white-space: nowrap; }
+  td { white-space: pre-line; min-width: 80px; max-width: 360px; }
   th { position: sticky; top: 0; background: #e7e1d3; font-weight: 600; }
   td.num { text-align: right; font-variant-numeric: tabular-nums; }
   td.blank { color: #bdb5a3; }
@@ -50,7 +52,7 @@
 <main>
   <a class="back" href="/">← Back to Verdict</a>
   <h1>Data</h1>
-  <p class="lede">Tables imported from Excel or CSV files. Each sheet in a workbook becomes its own table. Importing a file with the same name again replaces the old copy, so you can refresh a table by re-uploading it.</p>
+  <p class="lede">Tables imported from Excel or CSV files. Each sheet in a workbook becomes its own table, and tables stacked on one sheet are split apart. Importing a file with the same name again replaces the old copy, so you can refresh a table by re-uploading it.</p>
 
   <div id="importer" hidden>
     <label class="drop" id="drop">

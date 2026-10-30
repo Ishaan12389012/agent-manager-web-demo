@@ -180,7 +180,7 @@ app.get('/api/datasets', async (req, res, next) => {
     const { rows } = await pool.query(`
       SELECT d.id, d.name, d.source_file AS "sourceFile", jsonb_array_length(d.columns) AS "columnCount",
              d.row_count AS "rowCount", d.imported_at AS "importedAt", u.name AS "importedBy"
-      FROM datasets d LEFT JOIN users u ON u.id = d.imported_by ORDER BY d.imported_at DESC`);
+      FROM datasets d LEFT JOIN users u ON u.id = d.imported_by ORDER BY d.imported_at DESC, d.id`);
     res.json({ datasets: rows, canImport: canImport(req.user) });
   } catch (err) { next(err); }
 });
